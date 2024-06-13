@@ -25,7 +25,7 @@ const init = async () => {
         );
         res.json(rows);
       } catch (error) {
-        console.error("Failed to fetch sensors:", error);
+        console.error(error);
         res.status(500).send("Failed to fetch sensors");
       }
     });
@@ -38,7 +38,7 @@ const init = async () => {
         );
         res.json(rows);
       } catch (error) {
-        console.error("Failed to fetch outputs:", error);
+        console.error(error);
         res.status(500).send("Failed to fetch outputs");
       }
     });
@@ -49,13 +49,9 @@ const init = async () => {
         const [rows] = await connection.execute(
           "SELECT range_id, range_name, lower_limit, upper_limit FROM sensor_range"
         );
-        if (rows.length === 0) {
-          res.status(404).send("No ranges found");
-        } else {
-          res.json(rows);
-        }
+        res.json(rows);
       } catch (error) {
-        console.error("Failed to fetch ranges:", error);
+        console.error(error);
         res.status(500).send("Failed to fetch ranges");
       }
     });
@@ -72,13 +68,9 @@ const init = async () => {
             WHERE so.sensor_id = ?`,
           [sensor_id]
         );
-        if (rows.length === 0) {
-          res.status(404).send("No selected outputs found for the given sensor");
-        } else {
-          res.json(rows);
-        }
+        res.json(rows);
       } catch (error) {
-        console.error("Failed to fetch selected outputs:", error);
+        console.error(error);
         res.status(500).send("Failed to fetch selected outputs");
       }
     });
@@ -101,9 +93,12 @@ const init = async () => {
 
         await Promise.all(queries);
 
+        // Broadcast updated outputs
+        broadcast({ type: "update-outputs", sensor_id, range_outputs });
+
         res.send("Selected outputs updated successfully");
       } catch (error) {
-        console.error("Failed to update selected outputs:", error);
+        console.error(error);
         res.status(500).send("Failed to update selected outputs");
       }
     });
@@ -113,17 +108,17 @@ const init = async () => {
       const { range_id } = req.params;
       const { range_name, lower_limit, upper_limit } = req.body;
       try {
-        const [result] = await connection.execute(
+        await connection.execute(
           "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_id = ?",
           [range_name, lower_limit, upper_limit, range_id]
         );
-        if (result.affectedRows === 0) {
-          res.status(404).send("Range not found");
-        } else {
-          res.send("Range settings updated successfully");
-        }
+
+        // Broadcast updated range
+        broadcast({ type: "update-range", range_id, range_name, lower_limit, upper_limit });
+
+        res.send("Range settings updated successfully");
       } catch (error) {
-        console.error("Failed to update range settings:", error);
+        console.error(error);
         res.status(500).send("Failed to update range settings");
       }
     });
@@ -138,8 +133,13 @@ const init = async () => {
         );
         ws.send(JSON.stringify(rows));
       } catch (error) {
-        console.error("Failed to send initial sensor logs:", error);
+        console.error(error);
       }
+
+      ws.on("message", (message) => {
+        const data = JSON.parse(message);
+        // Handle incoming WebSocket messages if needed
+      });
 
       ws.on("close", () => {
         console.log("Client disconnected");
@@ -159,8 +159,8 @@ init();
 // Broadcast function to send updates to all clients
 const broadcast = (message) => {
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
+    if (client.readyState === client.OPEN) {
+      client.send(JSON.stringify(message));
     }
   });
 };

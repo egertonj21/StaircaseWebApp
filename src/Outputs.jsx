@@ -1,4 +1,3 @@
-// src/components/Outputs.js
 import React, { useState, useEffect } from "react";
 import {
   fetchSensors,
@@ -19,6 +18,7 @@ const Outputs = () => {
   const [selectedSensor, setSelectedSensor] = useState("");
   const [rangeOutputs, setRangeOutputs] = useState([]);
   const [currentSettings, setCurrentSettings] = useState([]);
+  const [ws, setWs] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +36,45 @@ const Outputs = () => {
       }
     };
     fetchData();
-  }, []);
+
+    // WebSocket connection setup
+    const socket = new WebSocket("ws://localhost:8080");
+
+    socket.onopen = () => {
+      console.log("WebSocket connection opened");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "update-outputs" && data.sensor_id === selectedSensor) {
+        setCurrentSettings(data.range_outputs);
+      } else if (data.type === "update-range") {
+        setRanges((prevRanges) =>
+          prevRanges.map((range) =>
+            range.range_id === data.range_id
+              ? { ...range, lower_limit: data.lower_limit, upper_limit: data.upper_limit }
+              : range
+          )
+        );
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = (event) => {
+      console.log("WebSocket connection closed", event);
+    };
+
+    setWs(socket);
+
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [selectedSensor]);
 
   const handleSensorChange = async (sensorId) => {
     setSelectedSensor(sensorId);
