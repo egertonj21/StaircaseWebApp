@@ -76,6 +76,7 @@ body {
 /* Content Styles */
 .about,
 .body,
+
 .container {
   background-image: url('../img/image.webp'); /* Ensure the path is correct */
   background-size: cover; /* Cover the entire div */
@@ -88,6 +89,73 @@ body {
   color: #fff; /* Text color */
   border-radius: 0;
 }
+
+/* Styles for Ranges component */
+.ranges-container {
+  padding: 20px;
+  max-width: 100vh;
+  height: 65vh;
+  margin: 0 auto;
+  background-color: rgba(249, 249, 249, 0.9);  /* Add a slight background color to ensure readability */
+  border-radius: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-image: url('/background4.webp');  /* Add the background image */
+  background-size: cover;  /* Ensure the background image covers the whole container */
+  background-position: center;  /* Center the background image */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.ranges .button{
+  align-items: flex-end;
+}
+.ranges-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.ranges-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.ranges-container label {
+  margin: 10px 0 5px;
+  color: #555;
+}
+
+.ranges-container select,
+.ranges-container input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.ranges-container input:disabled {
+  background-color: #eee;
+}
+
+.ranges-container button {
+  padding: 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.ranges-container button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.ranges-container button:hover:enabled {
+  background-color: #0056b3;
+}
+
 .about h1{
   color: black;
 }

@@ -25,7 +25,7 @@ const init = async () => {
         );
         res.json(rows);
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch sensors:", error);
         res.status(500).send("Failed to fetch sensors");
       }
     });
@@ -38,7 +38,7 @@ const init = async () => {
         );
         res.json(rows);
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch outputs:", error);
         res.status(500).send("Failed to fetch outputs");
       }
     });
@@ -49,9 +49,13 @@ const init = async () => {
         const [rows] = await connection.execute(
           "SELECT range_id, range_name, lower_limit, upper_limit FROM sensor_range"
         );
-        res.json(rows);
+        if (rows.length === 0) {
+          res.status(404).send("No ranges found");
+        } else {
+          res.json(rows);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch ranges:", error);
         res.status(500).send("Failed to fetch ranges");
       }
     });
@@ -68,9 +72,13 @@ const init = async () => {
             WHERE so.sensor_id = ?`,
           [sensor_id]
         );
-        res.json(rows);
+        if (rows.length === 0) {
+          res.status(404).send("No selected outputs found for the given sensor");
+        } else {
+          res.json(rows);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch selected outputs:", error);
         res.status(500).send("Failed to fetch selected outputs");
       }
     });
@@ -95,7 +103,7 @@ const init = async () => {
 
         res.send("Selected outputs updated successfully");
       } catch (error) {
-        console.error(error);
+        console.error("Failed to update selected outputs:", error);
         res.status(500).send("Failed to update selected outputs");
       }
     });
@@ -105,13 +113,17 @@ const init = async () => {
       const { range_id } = req.params;
       const { range_name, lower_limit, upper_limit } = req.body;
       try {
-        await connection.execute(
+        const [result] = await connection.execute(
           "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_id = ?",
           [range_name, lower_limit, upper_limit, range_id]
         );
-        res.send("Range settings updated successfully");
+        if (result.affectedRows === 0) {
+          res.status(404).send("Range not found");
+        } else {
+          res.send("Range settings updated successfully");
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Failed to update range settings:", error);
         res.status(500).send("Failed to update range settings");
       }
     });
@@ -126,7 +138,7 @@ const init = async () => {
         );
         ws.send(JSON.stringify(rows));
       } catch (error) {
-        console.error(error);
+        console.error("Failed to send initial sensor logs:", error);
       }
 
       ws.on("close", () => {
