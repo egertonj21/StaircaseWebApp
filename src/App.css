@@ -1,0 +1,255 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Header Styles */
+.header {
+  width: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: rgb(10, 157, 246); /* Optional: Change the background color */
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-icon {
+  width: 50px; /* Adjust the size as needed */
+  height: auto;
+}
+
+.header-title {
+  text-align: center;
+  color: rgb(255, 255, 255);
+  flex-grow: 1;
+}
+
+.header-nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px; /* Space between title and nav */
+}
+
+.header-nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: white; /* Adjust the color as needed */
+}
+
+.header-nav a:hover {
+  text-decoration: underline; /* Underline on hover */
+  color: #ffdd57; /* Change color on hover */
+}
+
+/* Content Styles */
+.about,
+.body,
+.container {
+  background-image: url('../img/image.webp'); /* Ensure the path is correct */
+  background-size: cover; /* Cover the entire div */
+  background-repeat: no-repeat; /* Prevent repeating */
+  background-position: center; /* Center the image */
+  width: 100vh;
+  height: 65vh; /* Full viewport height */
+  padding: 1em;
+  background-color: #ffffff; /* Fallback color */
+  color: #fff; /* Text color */
+  border-radius: 0;
+}
+.about h1{
+  color: black;
+}
+.about p{
+  color: black;
+}
+.body h1 {
+  font-size: 2.5em; /* Larger font size for the heading */
+  margin-bottom: 1em; /* Space below the heading */
+  color: #ffeb3b; /* Complementary color for the heading */
+}
+
+.body ul {
+  list-style: none; /* Remove default list styling */
+  padding: 0; /* Remove default padding */
+}
+
+.body li {
+  margin: 0.5em 0; /* Space between list items */
+}
+
+.body a {
+  color: #03a9f4; /* Complementary link color */
+  font-size: 1.5em; /* Larger font size for links */
+  text-decoration: none; /* Remove underline */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+.body a:hover {
+  color: #ffeb3b; /* Hover color */
+  text-decoration: underline; /* Underline on hover */
+}
+
+.container table {
+  color: rgb(0, 0, 0);
+  border-collapse: collapse;
+  width: 100%;
+  text-align: center;
+}
+
+/* Typography */
+h1, h2 {
+  text-align: center;
+}
+
+h1 {
+  font-size: 2em;
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  color: #333;
+}
+
+p {
+  font-size: 1.2em;
+  line-height: 1.5;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  font-size: 1.2em;
+  margin: 0.5em 0;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+select, input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Button Styles */
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Footer Styles */
+.footer {
+  width: 100vh;
+  padding: 1em;
+  background-color: #007acc; /* Background color */
+  color: #ffffff; /* Text color */
+  text-align: center;
+  margin-top: auto; /* Push footer to bottom */
+}
+
+/* Logo Styles */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* Card Styles */
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Additional Styles */
+.header-icon {
+  width: 100px;
+  height: 100px;
+  margin-right: 15px;
+}
