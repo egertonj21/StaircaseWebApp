@@ -21,6 +21,7 @@ function Header() {
         <Link to="/SensorLogs">Sensor Logs</Link>
         <Link to="/About">About</Link>
         <Link to="/Outputs">Outputs</Link>
+        <Link to="/RangeSettings">Range Settings</Link>
       </nav>
     </div>
   );

@@ -47,7 +47,7 @@ const init = async () => {
     app.get("/ranges", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          "SELECT range_id, range_name FROM sensor_range"
+          "SELECT range_id, range_name, lower_limit, upper_limit FROM sensor_range"
         );
         res.json(rows);
       } catch (error) {
@@ -97,6 +97,22 @@ const init = async () => {
       } catch (error) {
         console.error(error);
         res.status(500).send("Failed to update selected outputs");
+      }
+    });
+
+    // Update range settings
+    app.put("/range/:range_id", async (req, res) => {
+      const { range_id } = req.params;
+      const { range_name, lower_limit, upper_limit } = req.body;
+      try {
+        await connection.execute(
+          "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_id = ?",
+          [range_name, lower_limit, upper_limit, range_id]
+        );
+        res.send("Range settings updated successfully");
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Failed to update range settings");
       }
     });
 

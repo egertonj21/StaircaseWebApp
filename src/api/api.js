@@ -1,4 +1,3 @@
-// src/api/api.js
 import axios from 'axios';
 
 const api = axios.create({
@@ -10,3 +9,6 @@ export const fetchOutputs = () => api.get('/outputs');
 export const fetchRanges = () => api.get('/ranges');
 export const fetchCurrentSettings = (sensorId) => api.get(`/selected-output/${sensorId}`);
 export const updateSelectedOutputs = (data) => api.post('/selected-output', data);
+export const updateRangeSettings = (rangeId, data) => api.put(`/range/${rangeId}`, data); // Add this line
+
+export default api;
