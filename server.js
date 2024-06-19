@@ -21,7 +21,7 @@ const init = async () => {
     app.get("/sensors", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          "SELECT id, sensorName FROM Sensors"
+          "SELECT sensor_ID, sensor_name FROM sensor"
         );
         res.json(rows);
       } catch (error) {
@@ -30,7 +30,7 @@ const init = async () => {
       }
     });
 
-    // Fetch available outputs
+    // Fetch available outputs (assuming outputs is another table in your DB)
     app.get("/outputs", async (req, res) => {
       try {
         const [rows] = await connection.execute(
@@ -47,7 +47,7 @@ const init = async () => {
     app.get("/ranges", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          "SELECT range_id, range_name, lower_limit, upper_limit FROM sensor_range"
+          "SELECT range_ID, range_name, lower_limit, upper_limit FROM sensor_range"
         );
         res.json(rows);
       } catch (error) {
@@ -63,7 +63,7 @@ const init = async () => {
         const [rows] = await connection.execute(
           `SELECT so.range_id, sr.range_name, so.output_id, o.OutputName
             FROM SelectedOutputs so
-            JOIN sensor_range sr ON so.range_id = sr.range_id
+            JOIN sensor_range sr ON so.range_id = sr.range_ID
             JOIN Outputs o ON so.output_id = o.id
             WHERE so.sensor_id = ?`,
           [sensor_id]
@@ -109,7 +109,7 @@ const init = async () => {
       const { range_name, lower_limit, upper_limit } = req.body;
       try {
         await connection.execute(
-          "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_id = ?",
+          "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_ID = ?",
           [range_name, lower_limit, upper_limit, range_id]
         );
 
@@ -129,7 +129,7 @@ const init = async () => {
       // Send initial sensor logs to client
       try {
         const [rows] = await connection.execute(
-          "SELECT SensorID, SensorName, ROUND(Distance, 1) AS Distance, Timestamp FROM SensorLogs"
+          "SELECT sensor_ID, sensor_name, ROUND(distance, 1) AS distance, timestamp FROM input"
         );
         ws.send(JSON.stringify(rows));
       } catch (error) {
