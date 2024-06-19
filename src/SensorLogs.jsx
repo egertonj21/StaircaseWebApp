@@ -7,7 +7,7 @@ const SensorLogs = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080');
+    const ws = new WebSocket('ws://localhost:8080'); // Use 'localhost' if the server is on the same machine
 
     ws.onopen = () => {
       console.log('WebSocket connection established');
@@ -40,7 +40,6 @@ const SensorLogs = () => {
         <table>
           <thead>
             <tr>
-              {/* <th>Sensor ID</th> */}
               <th>Sensor Name</th>
               <th>Distance</th>
               <th>Timestamp</th>
@@ -49,10 +48,9 @@ const SensorLogs = () => {
           <tbody>
             {logs.map((log) => (
               <tr key={log.SensorID}>
-                {/* <td>{log.SensorID}</td> */}
-                <td>{log.SensorName}</td>
-                <td>{log.Distance}</td>
-                <td>{new Date(log.Timestamp).toLocaleString()}</td>
+                <td>{log.sensor_name}</td>
+                <td>{log.distance}</td>
+                <td>{new Date(log.timestamp).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

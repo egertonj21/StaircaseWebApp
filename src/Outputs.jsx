@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   fetchSensors,
-  fetchOutputs,
+  fetchActions,
   fetchRanges,
   fetchCurrentSettings,
   updateSelectedOutputs,
@@ -13,7 +13,7 @@ import backgroundImage from './img/background2.webp';
 
 const Outputs = () => {
   const [sensors, setSensors] = useState([]);
-  const [outputs, setOutputs] = useState([]);
+  const [actions, setActions] = useState([]);
   const [ranges, setRanges] = useState([]);
   const [selectedSensor, setSelectedSensor] = useState("");
   const [rangeOutputs, setRangeOutputs] = useState([]);
@@ -23,13 +23,13 @@ const Outputs = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [sensorsRes, outputsRes, rangesRes] = await Promise.all([
+        const [sensorsRes, actionsRes, rangesRes] = await Promise.all([
           fetchSensors(),
-          fetchOutputs(),
+          fetchActions(),
           fetchRanges(),
         ]);
         setSensors(sensorsRes.data);
-        setOutputs(outputsRes.data);
+        setActions(actionsRes.data);
         setRanges(rangesRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -130,8 +130,8 @@ const Outputs = () => {
           >
             <option value="">Select a sensor</option>
             {sensors.map((sensor) => (
-              <option key={sensor.id} value={sensor.id}>
-                {sensor.sensorName}
+              <option key={sensor.sensor_ID} value={sensor.sensor_ID}>
+                {sensor.sensor_name}
               </option>
             ))}
           </select>
@@ -153,9 +153,9 @@ const Outputs = () => {
                 defaultValue={setting ? setting.output_id : ""}
               >
                 <option value="">Select an output</option>
-                {outputs.map((output) => (
-                  <option key={output.id} value={output.id}>
-                    {output.OutputName}
+                {actions.map((action) => (
+                  <option key={action.action_ID} value={action.action_ID}>
+                    {action.action_name}
                   </option>
                 ))}
               </select>

@@ -30,16 +30,17 @@ const init = async () => {
       }
     });
 
-    // Fetch available outputs (assuming outputs is another table in your DB)
-    app.get("/outputs", async (req, res) => {
+    // Fetch available actions (assuming outputs are derived from action_table)
+    app.get("/actions", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          "SELECT id, OutputName FROM Outputs"
+          `SELECT action_ID, sensor_id, close, note_id_1, mid, note_id_2, far, note_id_3
+           FROM action_table`
         );
         res.json(rows);
       } catch (error) {
         console.error(error);
-        res.status(500).send("Failed to fetch outputs");
+        res.status(500).send("Failed to fetch actions");
       }
     });
 
@@ -61,11 +62,9 @@ const init = async () => {
       const { sensor_id } = req.params;
       try {
         const [rows] = await connection.execute(
-          `SELECT so.range_id, sr.range_name, so.output_id, o.OutputName
-            FROM SelectedOutputs so
-            JOIN sensor_range sr ON so.range_id = sr.range_ID
-            JOIN Outputs o ON so.output_id = o.id
-            WHERE so.sensor_id = ?`,
+          `SELECT at.close, at.note_id_1, at.mid, at.note_id_2, at.far, at.note_id_3
+            FROM action_table at
+            WHERE at.sensor_id = ?`,
           [sensor_id]
         );
         res.json(rows);
@@ -79,15 +78,17 @@ const init = async () => {
     app.post("/selected-output", async (req, res) => {
       const { sensor_id, range_outputs } = req.body;
       try {
+        // Delete existing entries for the sensor
         await connection.execute(
-          "DELETE FROM SelectedOutputs WHERE sensor_id = ?",
+          "DELETE FROM action_table WHERE sensor_id = ?",
           [sensor_id]
         );
 
+        // Insert new entries for the sensor
         const queries = range_outputs.map((ro) =>
           connection.execute(
-            "INSERT INTO SelectedOutputs (sensor_id, range_id, output_id) VALUES (?, ?, ?)",
-            [sensor_id, ro.range_id, ro.output_id]
+            "INSERT INTO action_table (sensor_id, close, note_id_1, mid, note_id_2, far, note_id_3) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [sensor_id, ro.close, ro.note_id_1, ro.mid, ro.note_id_2, ro.far, ro.note_id_3]
           )
         );
 
@@ -129,7 +130,9 @@ const init = async () => {
       // Send initial sensor logs to client
       try {
         const [rows] = await connection.execute(
-          "SELECT sensor_ID, sensor_name, ROUND(distance, 1) AS distance, timestamp FROM input"
+          `SELECT i.sensor_ID, s.sensor_name, ROUND(i.distance, 1) AS distance, i.timestamp 
+           FROM input i 
+           JOIN sensor s ON i.sensor_ID = s.sensor_ID`
         );
         ws.send(JSON.stringify(rows));
       } catch (error) {

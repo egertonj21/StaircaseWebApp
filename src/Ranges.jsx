@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { fetchRanges, updateRangeSettings } from "./api/api";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import React, { useState, useEffect } from 'react';
+import { fetchRanges, updateRangeSettings } from './api/api';
+import Header from './components/Header';
+import Footer from './components/Footer';
 import backgroundImage from './img/background4.webp';
-
 
 const Ranges = () => {
   const [ranges, setRanges] = useState([]);
@@ -17,6 +16,7 @@ const Ranges = () => {
     const getRanges = async () => {
       try {
         const response = await fetchRanges();
+        console.log("Fetched ranges:", response.data);
         setRanges(response.data);
       } catch (error) {
         console.error("Failed to fetch ranges:", error);
@@ -26,31 +26,40 @@ const Ranges = () => {
     getRanges();
 
     // WebSocket connection setup
-    const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket('ws://localhost:8080'); // Replace with IP if needed
 
     socket.onopen = () => {
-      console.log("WebSocket connection opened");
+      console.log('WebSocket connection opened');
     };
 
     socket.onmessage = (event) => {
+      console.log('WebSocket message received:', event.data);
       const data = JSON.parse(event.data);
-      if (data.type === "update-range") {
+
+      // Handle only update-range messages
+      if (Array.isArray(data)) {
+        console.log("Received sensor data, ignoring for range updates");
+        return;
+      }
+
+      if (data.type === 'update-range') {
         setRanges((prevRanges) =>
           prevRanges.map((range) =>
-            range.range_id === data.range_id
+            range.range_ID === data.range_ID
               ? { ...range, lower_limit: data.lower_limit, upper_limit: data.upper_limit }
               : range
           )
         );
+        console.log("Updated ranges after WebSocket message:", data);
       }
     };
 
     socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error('WebSocket error:', error);
     };
 
     socket.onclose = (event) => {
-      console.log("WebSocket connection closed", event);
+      console.log('WebSocket connection closed', event);
     };
 
     setWs(socket);
@@ -63,7 +72,7 @@ const Ranges = () => {
   }, []);
 
   const handleRangeChange = (event) => {
-    const selected = ranges.find((range) => range.range_id === parseInt(event.target.value));
+    const selected = ranges.find((range) => range.range_ID === parseInt(event.target.value));
     setSelectedRange(event.target.value);
     if (selected) {
       setRangeName(selected.range_name);
@@ -83,11 +92,14 @@ const Ranges = () => {
       return;
     }
     try {
-      await updateRangeSettings(selectedRange, {
+      const data = {
         range_name: rangeName,
         lower_limit: lowerLimit,
         upper_limit: upperLimit,
-      });
+      };
+      console.log("Updating range with data:", data);
+      const response = await updateRangeSettings(selectedRange, data);
+      console.log("Update response:", response);
       alert("Range settings updated successfully!");
     } catch (error) {
       console.error("Failed to update range settings:", error);
@@ -96,7 +108,7 @@ const Ranges = () => {
   };
 
   return (
-    <div className="ranges">
+    <>
       <Header />
       <div className="ranges-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <h1>Update Range Settings</h1>
@@ -107,7 +119,7 @@ const Ranges = () => {
               <option value="">--Select Range--</option>
               {ranges.length > 0 ? (
                 ranges.map((range) => (
-                  <option key={range.range_id} value={range.range_id}>
+                  <option key={range.range_ID} value={range.range_ID}>
                     {range.range_name}
                   </option>
                 ))
@@ -142,7 +154,7 @@ const Ranges = () => {
         </form>
       </div>
       <Footer />
-    </div>
+    </>
   );
 };
 
