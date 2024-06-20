@@ -115,6 +115,7 @@ body {
 
 .ranges-container form {
   display: flex;
+  width: 100vh;
   flex-direction: column;
 }
 
@@ -192,7 +193,7 @@ body {
 .container table {
   color: rgb(0, 0, 0);
   border-collapse: collapse;
-  width: 100%;
+  width: 100vh;
   text-align: center;
 }
 
