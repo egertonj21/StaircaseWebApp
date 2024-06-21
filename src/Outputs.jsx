@@ -3,6 +3,7 @@ import {
   fetchSensors,
   fetchActions,
   fetchRanges,
+  fetchNotes,
   fetchCurrentSettings,
   updateSelectedOutputs,
 } from "./api/api";
@@ -15,6 +16,7 @@ const Outputs = () => {
   const [sensors, setSensors] = useState([]);
   const [actions, setActions] = useState([]);
   const [ranges, setRanges] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [selectedSensor, setSelectedSensor] = useState("");
   const [rangeOutputs, setRangeOutputs] = useState([]);
   const [currentSettings, setCurrentSettings] = useState([]);
@@ -23,14 +25,16 @@ const Outputs = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [sensorsRes, actionsRes, rangesRes] = await Promise.all([
+        const [sensorsRes, actionsRes, rangesRes, notesRes] = await Promise.all([
           fetchSensors(),
           fetchActions(),
           fetchRanges(),
+          fetchNotes(),
         ]);
         setSensors(sensorsRes.data);
         setActions(actionsRes.data);
         setRanges(rangesRes.data);
+        setNotes(notesRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -46,12 +50,12 @@ const Outputs = () => {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === "update-outputs" && data.sensor_id === selectedSensor) {
+      if (data.type === "update-outputs" && data.sensor_ID === selectedSensor) {
         setCurrentSettings(data.range_outputs);
       } else if (data.type === "update-range") {
         setRanges((prevRanges) =>
           prevRanges.map((range) =>
-            range.range_id === data.range_id
+            range.range_ID === data.range_ID
               ? { ...range, lower_limit: data.lower_limit, upper_limit: data.upper_limit }
               : range
           )
@@ -90,14 +94,14 @@ const Outputs = () => {
     }
   };
 
-  const handleRangeOutputChange = (range_id, output_id) => {
+  const handleRangeOutputChange = (range_ID, note_ID) => {
     setRangeOutputs((prevState) => {
       const newState = [...prevState];
-      const index = newState.findIndex((ro) => ro.range_id === range_id);
+      const index = newState.findIndex((ro) => ro.range_ID === range_ID);
       if (index > -1) {
-        newState[index] = { range_id, output_id };
+        newState[index] = { ...newState[index], note_ID };
       } else {
-        newState.push({ range_id, output_id });
+        newState.push({ range_ID, note_ID });
       }
       return newState;
     });
@@ -105,16 +109,26 @@ const Outputs = () => {
 
   const handleSubmit = async () => {
     try {
-      await updateSelectedOutputs({
-        sensor_id: selectedSensor,
-        range_outputs: rangeOutputs,
-      });
+      const data = {
+        sensor_ID: selectedSensor,
+        range_outputs: rangeOutputs.map(ro => ({
+          range_ID: ro.range_ID,
+          note_ID: ro.note_ID
+        }))
+      };
+
+      await updateSelectedOutputs(data);
       alert("Selected outputs updated successfully");
       handleSensorChange(selectedSensor); // Refresh current settings
     } catch (error) {
       console.error("Error updating selected outputs", error);
       alert("Failed to update selected outputs");
     }
+  };
+
+  const getNoteNameById = (noteId) => {
+    const note = notes.find(n => n.note_ID === noteId);
+    return note ? note.note_name : "None";
   };
 
   return (
@@ -138,24 +152,24 @@ const Outputs = () => {
         </div>
         {ranges.map((range) => {
           const setting = currentSettings.find(
-            (cs) => cs.range_id === range.range_id
+            (cs) => cs.range_ID === range.range_ID
           );
           return (
-            <div key={range.range_id} className="form-group">
+            <div key={range.range_ID} className="form-group">
               <label className="label">
                 {range.range_name} (Current:{" "}
-                {setting ? setting.OutputName : "None"}):
+                {setting ? getNoteNameById(setting.note_ID) : "None"}):
               </label>
               <select
                 onChange={(e) =>
-                  handleRangeOutputChange(range.range_id, e.target.value)
+                  handleRangeOutputChange(range.range_ID, e.target.value)
                 }
-                defaultValue={setting ? setting.output_id : ""}
+                defaultValue={setting ? setting.note_ID : ""}
               >
-                <option value="">Select an output</option>
-                {actions.map((action) => (
-                  <option key={action.action_ID} value={action.action_ID}>
-                    {action.action_name}
+                <option value="">Select a note</option>
+                {notes.map((note) => (
+                  <option key={note.note_ID} value={note.note_ID}>
+                    {note.note_name}
                   </option>
                 ))}
               </select>

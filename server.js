@@ -34,7 +34,7 @@ const init = async () => {
     app.get("/actions", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          `SELECT action_ID, sensor_id, close, note_id_1, mid, note_id_2, far, note_id_3
+          `SELECT action_ID, sensor_ID, range_ID, note_ID
            FROM action_table`
         );
         res.json(rows);
@@ -57,15 +57,28 @@ const init = async () => {
       }
     });
 
-    // Fetch current settings for a selected sensor
-    app.get("/selected-output/:sensor_id", async (req, res) => {
-      const { sensor_id } = req.params;
+    // Fetch available notes
+    app.get("/notes", async (req, res) => {
       try {
         const [rows] = await connection.execute(
-          `SELECT at.close, at.note_id_1, at.mid, at.note_id_2, at.far, at.note_id_3
-            FROM action_table at
-            WHERE at.sensor_id = ?`,
-          [sensor_id]
+          "SELECT note_ID, note_name, note_location FROM note"
+        );
+        res.json(rows);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Failed to fetch notes");
+      }
+    });
+
+    // Fetch current settings for a selected sensor
+    app.get("/selected-output/:sensor_ID", async (req, res) => {
+      const { sensor_ID } = req.params;
+      try {
+        const [rows] = await connection.execute(
+          `SELECT at.range_ID, at.note_ID, at.sensor_ID
+           FROM action_table at
+           WHERE at.sensor_ID = ?`,
+          [sensor_ID]
         );
         res.json(rows);
       } catch (error) {
@@ -76,26 +89,31 @@ const init = async () => {
 
     // Update SelectedOutputs for all permutations
     app.post("/selected-output", async (req, res) => {
-      const { sensor_id, range_outputs } = req.body;
+      const { sensor_ID, range_outputs } = req.body;
       try {
+        // Ensure all necessary fields are present and not undefined
+        if (!sensor_ID || !Array.isArray(range_outputs) || range_outputs.length === 0) {
+          return res.status(400).send("Invalid input data");
+        }
+
         // Delete existing entries for the sensor
         await connection.execute(
-          "DELETE FROM action_table WHERE sensor_id = ?",
-          [sensor_id]
+          "DELETE FROM action_table WHERE sensor_ID = ?",
+          [sensor_ID]
         );
 
         // Insert new entries for the sensor
         const queries = range_outputs.map((ro) =>
           connection.execute(
-            "INSERT INTO action_table (sensor_id, close, note_id_1, mid, note_id_2, far, note_id_3) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [sensor_id, ro.close, ro.note_id_1, ro.mid, ro.note_id_2, ro.far, ro.note_id_3]
+            "INSERT INTO action_table (sensor_ID, range_ID, note_ID) VALUES (?, ?, ?)",
+            [sensor_ID, ro.range_ID || null, ro.note_ID || null]
           )
         );
 
         await Promise.all(queries);
 
         // Broadcast updated outputs
-        broadcast({ type: "update-outputs", sensor_id, range_outputs });
+        broadcast({ type: "update-outputs", sensor_ID, range_outputs });
 
         res.send("Selected outputs updated successfully");
       } catch (error) {
@@ -105,17 +123,20 @@ const init = async () => {
     });
 
     // Update range settings
-    app.put("/range/:range_id", async (req, res) => {
-      const { range_id } = req.params;
+    app.put("/range/:range_ID", async (req, res) => {
+      const { range_ID } = req.params;
       const { range_name, lower_limit, upper_limit } = req.body;
       try {
+        if (!range_name || lower_limit === undefined || upper_limit === undefined) {
+          return res.status(400).send("Invalid input data");
+        }
         await connection.execute(
           "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_ID = ?",
-          [range_name, lower_limit, upper_limit, range_id]
+          [range_name, lower_limit, upper_limit, range_ID]
         );
 
         // Broadcast updated range
-        broadcast({ type: "update-range", range_id, range_name, lower_limit, upper_limit });
+        broadcast({ type: "update-range", range_ID, range_name, lower_limit, upper_limit });
 
         res.send("Range settings updated successfully");
       } catch (error) {
