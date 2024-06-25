@@ -4,12 +4,31 @@ const api = axios.create({
     baseURL: 'http://localhost:3000'
 });
 
+// Fetch the list of sensors
 export const fetchSensors = () => api.get('/sensors');
-export const fetchActions = () => api.get('/actions'); // Updated to fetch actions from action_table
+
+// Fetch actions from the action_table
+export const fetchActions = () => api.get('/actions');
+
+// Fetch range settings
 export const fetchRanges = () => api.get('/ranges');
-export const fetchNotes = () => api.get('/notes'); // New function to fetch notes
+
+// Fetch notes including their locations
+export const fetchNotes = () => api.get('/notes');
+
+// Fetch current settings for a selected sensor
 export const fetchCurrentSettings = (sensorId) => api.get(`/selected-output/${sensorId}`);
-export const updateSelectedOutputs = (data) => api.post('/selected-output', data);
+
+// Update selected outputs for a sensor
+export const updateSelectedOutputs = (sensorId, data) => api.post(`/selected-output/${sensorId}`, data);
+
+// Update range settings for a given range
 export const updateRangeSettings = (rangeId, data) => api.put(`/range/${rangeId}`, data);
+
+// Fetch note details based on sensor and range ID
+export const fetchNoteDetails = (sensorId, rangeId) => api.get(`/note-details/${sensorId}/${rangeId}`);
+
+// Log sensor data
+export const logSensorData = (data) => api.post('/log-sensor-data', data);
 
 export default api;
