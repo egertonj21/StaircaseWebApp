@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchLogs } from './api/api';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import backgroundImage from './img/background3.webp';
@@ -7,29 +8,29 @@ const SensorLogs = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.0.x:8080'); // Replace with your server's IP address
+    const ws = new WebSocket('ws://localhost:8080'); // Use 'localhost' if the server is on the same machine
 
     ws.onopen = () => {
       console.log('WebSocket connection established');
     };
 
     ws.onmessage = (event) => {
-      try {
-        console.log('WebSocket message received:', event.data);
-        const data = JSON.parse(event.data);
-        setLogs(data);
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
+      console.log('WebSocket message received:', event.data);
+      const data = JSON.parse(event.data);
+      setLogs(data);
     };
 
-    ws.onclose = (event) => {
-      console.log('WebSocket connection closed:', event);
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
+
+    fetchLogs()
+      .then(response => setLogs(response.data))
+      .catch(error => console.error('Error fetching logs:', error));
 
     return () => {
       ws.close();

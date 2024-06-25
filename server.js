@@ -12,9 +12,10 @@ app.use(cors());
 const wss = new WebSocketServer({ port: 8080 });
 
 const init = async () => {
+    let connection;
     try {
         // MySQL connection setup
-        const connection = await createConnection();
+        connection = await createConnection();
 
         // Define all routes that require DB connection inside here
         app.get("/sensors", async (req, res) => {
@@ -79,6 +80,17 @@ const init = async () => {
             try {
                 await connection.execute("INSERT INTO input (sensor_ID, distance) VALUES (?, ?)", [sensor_ID, distance]);
                 res.status(200).send("Sensor data logged successfully");
+
+                // Fetch the latest sensor logs and broadcast to WebSocket clients
+                const [rows] = await connection.execute(
+                    `SELECT i.sensor_ID, s.sensor_name, i.distance, i.timestamp 
+                     FROM input i 
+                     JOIN sensor s ON i.sensor_ID = s.sensor_ID
+                     ORDER BY i.timestamp DESC
+                     LIMIT 10`
+                );
+                broadcast(rows);
+
             } catch (error) {
                 console.error("Failed to log sensor data:", error);
                 res.status(500).send("Failed to log sensor data");
@@ -143,6 +155,22 @@ const init = async () => {
             } catch (error) {
                 console.error("Failed to update selected outputs:", error);
                 res.status(500).send("Failed to update selected outputs");
+            }
+        });
+
+        app.get("/logs", async (req, res) => {
+            try {
+                const [rows] = await connection.execute(
+                    `SELECT i.sensor_ID, s.sensor_name, i.distance, i.timestamp 
+                     FROM input i 
+                     JOIN sensor s ON i.sensor_ID = s.sensor_ID
+                     ORDER BY i.timestamp DESC
+                     LIMIT 10`
+                );
+                res.json(rows);
+            } catch (error) {
+                console.error("Failed to fetch logs:", error);
+                res.status(500).send("Failed to fetch logs");
             }
         });
 
