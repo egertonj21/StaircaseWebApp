@@ -57,6 +57,7 @@ const Outputs = () => {
     console.log("WebSocket message received:", data);
     if (data.type === "update-outputs" && data.sensor_ID === selectedSensor) {
       setCurrentSettings(data.range_outputs || []);
+      setRangeOutputs(data.range_outputs || []);
     } else if (data.type === "update-range") {
       setRanges(prevRanges => prevRanges.map(range =>
         range.range_ID === data.range_ID ? { ...range, ...data } : range
@@ -76,12 +77,23 @@ const Outputs = () => {
         .catch(error => console.error("Failed to fetch settings:", error));
     } else {
       setCurrentSettings([]);
+      setRangeOutputs([]);
     }
   };
 
   const handleRangeOutputChange = (range_ID, note_ID) => {
     setRangeOutputs(prev => {
       const index = prev.findIndex(ro => ro.range_ID === range_ID);
+      if (index !== -1) {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], note_ID };
+        return updated;
+      } else {
+        return [...prev, { range_ID, note_ID }];
+      }
+    });
+    setCurrentSettings(prev => {
+      const index = prev.findIndex(cs => cs.range_ID === range_ID);
       if (index !== -1) {
         const updated = [...prev];
         updated[index] = { ...updated[index], note_ID };
