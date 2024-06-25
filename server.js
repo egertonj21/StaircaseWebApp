@@ -30,7 +30,7 @@ const init = async () => {
 
         app.get("/actions", async (req, res) => {
             try {
-                const [rows] = await connection.execute(`SELECT action_ID, sensor_ID, range_ID, note_ID FROM action_table`);
+                const [rows] = await connection.execute("SELECT action_ID, sensor_ID, range_ID, note_ID FROM action_table");
                 res.json(rows);
             } catch (error) {
                 console.error(error);
@@ -78,9 +78,8 @@ const init = async () => {
         app.post("/log-sensor-data", async (req, res) => {
             const { sensor_ID, distance } = req.body;
             try {
-                await connection.execute("INSERT INTO input (sensor_ID, distance) VALUES (?, ?)", [sensor_ID, distance]);
-                res.status(200).send("Sensor data logged successfully");
-
+                await connection.execute("INSERT INTO input (sensor_ID, distance, timestamp) VALUES (?, ?, NOW())", [sensor_ID, distance]);
+                
                 // Fetch the latest sensor logs and broadcast to WebSocket clients
                 const [rows] = await connection.execute(
                     `SELECT i.sensor_ID, s.sensor_name, i.distance, i.timestamp 
@@ -91,9 +90,12 @@ const init = async () => {
                 );
                 broadcast(rows);
 
+                res.status(200).send("Sensor data logged successfully");
             } catch (error) {
                 console.error("Failed to log sensor data:", error);
-                res.status(500).send("Failed to log sensor data");
+                if (!res.headersSent) {
+                    res.status(500).send("Failed to log sensor data");
+                }
             }
         });
 
@@ -187,7 +189,7 @@ init();
 
 const broadcast = (message) => {
     wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
+        if (client.readyState === client.OPEN) {
             client.send(JSON.stringify(message));
         }
     });

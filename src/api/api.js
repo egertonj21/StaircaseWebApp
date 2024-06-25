@@ -31,7 +31,7 @@ export const fetchNoteDetails = (sensorId, rangeId) => api.get(`/note-details/${
 // Log sensor data
 export const logSensorData = (data) => api.post('/log-sensor-data', data);
 
-// Fetch sensor logs
+// Fetch logs
 export const fetchLogs = () => api.get('/logs');
 
 export default api;
