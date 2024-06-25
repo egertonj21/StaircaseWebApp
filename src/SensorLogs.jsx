@@ -7,20 +7,24 @@ const SensorLogs = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080'); // Use 'localhost' if the server is on the same machine
+    const ws = new WebSocket('ws://192.168.0.x:8080'); // Replace with your server's IP address
 
     ws.onopen = () => {
       console.log('WebSocket connection established');
     };
 
     ws.onmessage = (event) => {
-      console.log('WebSocket message received:', event.data);
-      const data = JSON.parse(event.data);
-      setLogs(data);
+      try {
+        console.log('WebSocket message received:', event.data);
+        const data = JSON.parse(event.data);
+        setLogs(data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket connection closed');
+    ws.onclose = (event) => {
+      console.log('WebSocket connection closed:', event);
     };
 
     ws.onerror = (error) => {
@@ -47,7 +51,7 @@ const SensorLogs = () => {
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.SensorID}>
+              <tr key={log.sensor_ID}>
                 <td>{log.sensor_name}</td>
                 <td>{log.distance}</td>
                 <td>{new Date(log.timestamp).toLocaleString()}</td>
