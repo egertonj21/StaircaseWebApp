@@ -167,7 +167,7 @@ const init = async () => {
                      FROM input i 
                      JOIN sensor s ON i.sensor_ID = s.sensor_ID
                      ORDER BY i.timestamp DESC
-                     LIMIT 10`
+                     LIMIT 20`
                 );
                 res.json(rows);
             } catch (error) {
