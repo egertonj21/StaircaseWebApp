@@ -74,7 +74,32 @@ const init = async () => {
                 res.status(500).send("Failed to fetch note details");
             }
         });
-
+                // Update range settings for a given range
+                app.put("/range/:range_ID", async (req, res) => {
+                    const { range_ID } = req.params;
+                    const { range_name, lower_limit, upper_limit } = req.body;
+        
+                    if (!range_name || lower_limit === undefined || upper_limit === undefined) {
+                        return res.status(400).send("Invalid input data");
+                    }
+        
+                    try {
+                        const [result] = await connection.execute(
+                            "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_ID = ?",
+                            [range_name, lower_limit, upper_limit, range_ID]
+                        );
+        
+                        if (result.affectedRows === 0) {
+                            res.status(404).send("Range not found");
+                        } else {
+                            res.send("Range settings updated successfully");
+                        }
+                    } catch (error) {
+                        console.error("Failed to update range settings:", error);
+                        res.status(500).send("Failed to update range settings");
+                    }
+                });
+        
         app.post("/log-sensor-data", async (req, res) => {
             const { sensor_ID, distance } = req.body;
             try {
