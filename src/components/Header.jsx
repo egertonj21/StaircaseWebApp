@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import icon from '../img/backdrop.webp';
 import mqtt from 'mqtt';
+import Switch from 'react-switch';
 
 const CONTROL_TOPIC = "control/distance_sensor";
 
 function Header() {
   const [client, setClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isAwake, setIsAwake] = useState(true); // Track the state of the sensor
 
   useEffect(() => {
     // Connect to the MQTT broker via WebSocket
@@ -39,29 +41,16 @@ function Header() {
     };
   }, []);
 
-  // Function to handle sleep command
-  const handleSleep = () => {
+  // Function to handle toggle
+  const handleToggle = () => {
     if (isConnected && client) {
-      client.publish(CONTROL_TOPIC, 'sleep', (error) => {
+      const command = isAwake ? 'sleep' : 'wake';
+      client.publish(CONTROL_TOPIC, command, (error) => {
         if (error) {
           console.error('Publish error: ', error);
         } else {
-          console.log('Sleep command sent');
-        }
-      });
-    } else {
-      console.error('Client is not connected');
-    }
-  };
-
-  // Function to handle wake command
-  const handleWake = () => {
-    if (isConnected && client) {
-      client.publish(CONTROL_TOPIC, 'wake', (error) => {
-        if (error) {
-          console.error('Publish error: ', error);
-        } else {
-          console.log('Wake command sent');
+          console.log(`${command} command sent`);
+          setIsAwake(!isAwake); // Toggle the state
         }
       });
     } else {
@@ -88,8 +77,18 @@ function Header() {
         <Link to="/About">About</Link>
         <Link to="/Outputs">Outputs</Link>
         <Link to="/Ranges">Range Settings</Link>
-        <button onClick={handleSleep}>Sleep</button>
-        <button onClick={handleWake}>Wake</button>
+        <div className="toggle-container">
+          <label className="toggle-label">Sensors</label>
+          <Switch
+            onChange={handleToggle}
+            checked={isAwake}
+            offColor="#888"
+            onColor="#0f0"
+            uncheckedIcon={false}
+            checkedIcon={false}
+          />
+          <span className="toggle-status">{isAwake ? 'Awake' : 'Asleep'}</span>
+        </div>
       </nav>
     </div>
   );

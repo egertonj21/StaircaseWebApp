@@ -322,3 +322,62 @@ button:hover {
   height: 100px;
   margin-right: 15px;
 }
+
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  /* background-color: #333; */
+  color: #fff;
+}
+
+.header-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.header-title {
+  margin: 0 20px;
+  font-size: 24px;
+}
+
+.header-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  /* background-color: #444; */
+  padding: 10px;
+}
+
+/* .header-nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
+} */
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  margin-right: 10px;
+  font-size: 16px;
+  color: #fff;
+}
+
+.toggle-status {
+  margin-left: 10px;
+  font-size: 16px;
+  color: #fff;
+}
