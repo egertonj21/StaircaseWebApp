@@ -4,8 +4,10 @@ import icon from '../img/backdrop.webp';
 import mqtt from 'mqtt';
 import Switch from 'react-switch';
 
+// Define MQTT topics
 const CONTROL_TOPIC = "control/distance_sensor";
 const MUTE_TOPIC = "audio/mute";
+const MOTION_CONTROL_TOPIC = "control/motion_sensor"; // New topic for motion sensor control
 
 function Header() {
   const [mqttClient, setMqttClient] = useState(null);
@@ -80,6 +82,16 @@ function Header() {
         } else {
           console.log(`${command} command sent`);
           setIsAwake(!isAwake); // Toggle the state
+        }
+      });
+
+      const motionCommand = isAwake ? 'motion_wake' : 'motion_sleep';
+      console.log(`Publishing command to ${MOTION_CONTROL_TOPIC}: ${motionCommand}`);
+      mqttClient.publish(MOTION_CONTROL_TOPIC, motionCommand, (error) => {
+        if (error) {
+          console.error('Publish error:', error);
+        } else {
+          console.log(`${motionCommand} command sent`);
         }
       });
     } else {
