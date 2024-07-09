@@ -34,4 +34,7 @@ export const logSensorData = (data) => api.post('/log-sensor-data', data);
 // Fetch logs
 export const fetchLogs = () => api.get('/logs');
 
+// Fetch the current awake status of a sensor
+export const fetchSensorStatus = () => api.get('/sensor-status');
+
 export default api;

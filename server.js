@@ -74,32 +74,32 @@ const init = async () => {
                 res.status(500).send("Failed to fetch note details");
             }
         });
-                // Update range settings for a given range
-                app.put("/range/:range_ID", async (req, res) => {
-                    const { range_ID } = req.params;
-                    const { range_name, lower_limit, upper_limit } = req.body;
-        
-                    if (!range_name || lower_limit === undefined || upper_limit === undefined) {
-                        return res.status(400).send("Invalid input data");
-                    }
-        
-                    try {
-                        const [result] = await connection.execute(
-                            "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_ID = ?",
-                            [range_name, lower_limit, upper_limit, range_ID]
-                        );
-        
-                        if (result.affectedRows === 0) {
-                            res.status(404).send("Range not found");
-                        } else {
-                            res.send("Range settings updated successfully");
-                        }
-                    } catch (error) {
-                        console.error("Failed to update range settings:", error);
-                        res.status(500).send("Failed to update range settings");
-                    }
-                });
-        
+
+        app.put("/range/:range_ID", async (req, res) => {
+            const { range_ID } = req.params;
+            const { range_name, lower_limit, upper_limit } = req.body;
+
+            if (!range_name || lower_limit === undefined || upper_limit === undefined) {
+                return res.status(400).send("Invalid input data");
+            }
+
+            try {
+                const [result] = await connection.execute(
+                    "UPDATE sensor_range SET range_name = ?, lower_limit = ?, upper_limit = ? WHERE range_ID = ?",
+                    [range_name, lower_limit, upper_limit, range_ID]
+                );
+
+                if (result.affectedRows === 0) {
+                    res.status(404).send("Range not found");
+                } else {
+                    res.send("Range settings updated successfully");
+                }
+            } catch (error) {
+                console.error("Failed to update range settings:", error);
+                res.status(500).send("Failed to update range settings");
+            }
+        });
+
         app.post("/log-sensor-data", async (req, res) => {
             const { sensor_ID, distance } = req.body;
             try {
@@ -151,7 +151,7 @@ const init = async () => {
             if (!sensor_ID || !Array.isArray(range_outputs)) {
                 return res.status(400).send("Invalid input data");
             }
-        
+
             try {
                 // Delete existing entries for the sensor
                 const deleteResult = await connection.execute(
@@ -159,7 +159,7 @@ const init = async () => {
                     [sensor_ID]
                 );
                 console.log(`Deleted ${deleteResult[0].affectedRows} rows for sensor ID ${sensor_ID}`);
-        
+
                 // Insert new entries for the sensor if there are any range outputs specified
                 if (range_outputs.length > 0) {
                     const insertPromises = range_outputs.map(output => {
@@ -171,13 +171,13 @@ const init = async () => {
                         }
                         return Promise.reject(new Error("Missing range_ID or note_ID in some outputs"));
                     });
-        
+
                     const insertResults = await Promise.all(insertPromises);
                     insertResults.forEach((result, index) => {
                         console.log(`Inserted row for range_ID ${range_outputs[index].range_ID} with note_ID ${range_outputs[index].note_ID}`);
                     });
                 }
-        
+
                 res.send("Selected outputs updated successfully");
             } catch (error) {
                 console.error("Failed to update selected outputs:", error);
@@ -199,6 +199,75 @@ const init = async () => {
                 console.error("Failed to fetch logs:", error);
                 res.status(500).send("Failed to fetch logs");
             }
+        });
+
+        // Endpoint to fetch the current awake status of a sensor
+        app.get("/sensor-status", async (req, res) => {
+            try {
+                const [rows] = await connection.execute("SELECT sensor_ID, awake FROM alive WHERE sensor_ID = 3");  // Adjust the query as needed
+                if (rows.length > 0) {
+                    res.json(rows[0]);
+                } else {
+                    res.status(404).send("Sensor not found");
+                }
+            } catch (error) {
+                console.error("Failed to fetch sensor status:", error);
+                res.status(500).send("Failed to fetch sensor status");
+            }
+        });
+
+        // Handle WebSocket connections
+        wss.on('connection', async (ws) => {
+            console.log('New client connected');
+
+            // Send initial sensor status to the client
+            try {
+                const [rows] = await connection.execute("SELECT sensor_ID, awake FROM alive WHERE sensor_ID = 3");  // Adjust the query as needed
+                if (rows.length > 0) {
+                    ws.send(JSON.stringify({ type: 'sensor_status', awake: rows[0].awake, muted: false }));  // Replace false with actual mute status if you have it
+                } else {
+                    ws.send(JSON.stringify({ type: 'error', message: 'Sensor not found' }));
+                }
+            } catch (error) {
+                console.error('Failed to fetch sensor status:', error);
+                ws.send(JSON.stringify({ type: 'error', message: 'Failed to fetch sensor status' }));
+            }
+
+            ws.on('message', async (message) => {
+                const data = JSON.parse(message);
+                console.log('Received message:', data);
+
+                if (data.action === 'get_sensor_status') {
+                    try {
+                        const [rows] = await connection.execute("SELECT sensor_ID, awake FROM alive WHERE sensor_ID = 3");  // Adjust the query as needed
+                        if (rows.length > 0) {
+                            ws.send(JSON.stringify({ type: 'sensor_status', awake: rows[0].awake, muted: false }));  // Replace false with actual mute status if you have it
+                        } else {
+                            ws.send(JSON.stringify({ type: 'error', message: 'Sensor not found' }));
+                        }
+                    } catch (error) {
+                        console.error('Failed to fetch sensor status:', error);
+                        ws.send(JSON.stringify({ type: 'error', message: 'Failed to fetch sensor status' }));
+                    }
+                } else if (data.action === 'sleep' || data.action === 'wake') {
+                    const awake = data.action === 'wake';
+                    try {
+                        await connection.execute("UPDATE alive SET awake = ? WHERE sensor_ID = 3", [awake ? 1 : 0]);  // Adjust the query as needed
+                        broadcast({ type: 'sensor_status', awake, muted: false });  // Replace false with actual mute status if you have it
+                    } catch (error) {
+                        console.error('Failed to update sensor status:', error);
+                        ws.send(JSON.stringify({ type: 'error', message: 'Failed to update sensor status' }));
+                    }
+                } else if (data.action === 'mute' || data.action === 'unmute') {
+                    const muted = data.action === 'mute';
+                    // Update the mute status in the database or memory
+                    broadcast({ type: 'sensor_status', awake: true, muted });  // Replace true with actual awake status if you have it
+                }
+            });
+
+            ws.on('close', () => {
+                console.log('Client disconnected');
+            });
         });
 
         app.listen(port, () => {

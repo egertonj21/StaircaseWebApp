@@ -5,14 +5,16 @@ import mqtt from 'mqtt';
 import Switch from 'react-switch';
 
 const CONTROL_TOPIC = "control/distance_sensor";
+const MUTE_TOPIC = "audio/mute";
 
 function Header() {
-  const [client, setClient] = useState(null);
+  const [mqttClient, setMqttClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAwake, setIsAwake] = useState(true); // Track the state of the sensor
+  const [isMuted, setIsMuted] = useState(false); // Track the state of the mute
 
   useEffect(() => {
-    // Connect to the MQTT broker via WebSocket
+    // Connect to the MQTT broker
     const mqttClient = mqtt.connect('ws://192.168.0.93:8080');
 
     mqttClient.on('connect', () => {
@@ -21,7 +23,7 @@ function Header() {
     });
 
     mqttClient.on('error', (err) => {
-      console.error('Connection error: ', err);
+      console.error('MQTT connection error:', err);
       setIsConnected(false);
     });
 
@@ -34,27 +36,72 @@ function Header() {
       console.log('Reconnecting to MQTT broker...');
     });
 
-    setClient(mqttClient);
+    setMqttClient(mqttClient);
+
+    // WebSocket for receiving initial sensor states
+    const ws = new WebSocket('ws://192.168.0.93:8080');
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server');
+      ws.send(JSON.stringify({ action: 'get_sensor_status' }));
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log('Received WebSocket message:', message);
+      if (message.type === 'sensor_status') {
+        setIsAwake(!!message.awake); // Convert to boolean
+        setIsMuted(message.muted);
+        console.log('Updated state - awake:', !!message.awake, 'muted:', message.muted);
+      }
+    };
+
+    ws.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
+
+    ws.onclose = (event) => {
+      console.error('WebSocket connection closed', event);
+    };
 
     return () => {
       mqttClient.end();
+      ws.close();
     };
   }, []);
 
-  // Function to handle toggle
-  const handleToggle = () => {
-    if (isConnected && client) {
+  // Function to handle awake/asleep toggle
+  const handleAwakeToggle = () => {
+    if (isConnected && mqttClient) {
       const command = isAwake ? 'sleep' : 'wake';
-      client.publish(CONTROL_TOPIC, command, (error) => {
+      console.log(`Publishing command to ${CONTROL_TOPIC}: ${command}`);
+      mqttClient.publish(CONTROL_TOPIC, command, (error) => {
         if (error) {
-          console.error('Publish error: ', error);
+          console.error('Publish error:', error);
         } else {
           console.log(`${command} command sent`);
           setIsAwake(!isAwake); // Toggle the state
         }
       });
     } else {
-      console.error('Client is not connected');
+      console.error('MQTT client is not connected');
+    }
+  };
+
+  // Function to handle mute/unmute toggle
+  const handleMuteToggle = () => {
+    if (isConnected && mqttClient) {
+      const command = isMuted ? 'unmute' : 'mute';
+      console.log(`Publishing command to ${MUTE_TOPIC}: ${command}`);
+      mqttClient.publish(MUTE_TOPIC, command, (error) => {
+        if (error) {
+          console.error('Publish error:', error);
+        } else {
+          console.log(`${command} command sent`);
+          setIsMuted(!isMuted); // Toggle the state
+        }
+      });
+    } else {
+      console.error('MQTT client is not connected');
     }
   };
 
@@ -80,7 +127,7 @@ function Header() {
         <div className="toggle-container">
           <label className="toggle-label">Sensors</label>
           <Switch
-            onChange={handleToggle}
+            onChange={handleAwakeToggle}
             checked={isAwake}
             offColor="#888"
             onColor="#0f0"
@@ -88,6 +135,18 @@ function Header() {
             checkedIcon={false}
           />
           <span className="toggle-status">{isAwake ? 'Awake' : 'Asleep'}</span>
+        </div>
+        <div className="toggle-container">
+          <label className="toggle-label">Mute</label>
+          <Switch
+            onChange={handleMuteToggle}
+            checked={isMuted}
+            offColor="#888"
+            onColor="#f00"
+            uncheckedIcon={false}
+            checkedIcon={false}
+          />
+          <span className="toggle-status">{isMuted ? 'Muted' : 'Unmuted'}</span>
         </div>
       </nav>
     </div>
