@@ -52,8 +52,8 @@ export const fetchSensorLightById = (id) => api.get(`/sensor-light/${id}`);
 // Create a new sensor_light entry
 export const createSensorLight = (data) => api.post('/sensor-light', data);
 
-// Update an existing sensor_light entry by ID
-export const updateSensorLight = (id, data) => api.put(`/sensor-light/${id}`, data);
+// Update an existing sensor_light entry by name
+export const updateSensorLight = (name, data) => api.put(`/sensor-light/${name}`, data);
 
 // Fetch all light_duration entries
 export const fetchLightDurations = () => api.get('/light-durations');
@@ -66,5 +66,8 @@ export const createLightDuration = (data) => api.post('/light-duration', data);
 
 // Update an existing light_duration entry by ID
 export const updateLightDuration = (id, data) => api.put(`/light-duration/${id}`, data);
+
+// Fetch all colours
+export const fetchColours = () => api.get('/colours');
 
 export default api;
