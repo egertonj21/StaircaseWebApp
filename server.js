@@ -27,6 +27,42 @@ const init = async () => {
                 res.status(500).send("Failed to fetch sensors");
             }
         });
+        // Endpoint to update LED strip status
+app.put("/ledstrip/:id", async (req, res) => {
+    const { id } = req.params;
+    const { LED_strip_name, LED_alive, LED_active, colour_ID } = req.body;
+
+    if (!LED_strip_name || LED_alive === undefined || LED_active === undefined || !colour_ID) {
+        return res.status(400).send("Invalid input data");
+    }
+
+    try {
+        const [result] = await connection.execute(
+            "UPDATE LED_strip SET LED_strip_name = ?, LED_alive = ?, LED_active = ?, colour_ID = ? WHERE LED_strip_ID = ?",
+            [LED_strip_name, LED_alive, LED_active, colour_ID, id]
+        );
+
+        if (result.affectedRows === 0) {
+            res.status(404).send("LED strip not found");
+        } else {
+            res.send("LED strip updated successfully");
+        }
+    } catch (error) {
+        console.error("Failed to update LED strip:", error);
+        res.status(500).send("Failed to update LED strip");
+    }
+});
+
+// Endpoint to get all LED strips
+app.get("/ledstrips", async (req, res) => {
+    try {
+        const [rows] = await connection.execute("SELECT * FROM LED_strip");
+        res.json(rows);
+    } catch (error) {
+        console.error("Failed to fetch LED strips:", error);
+        res.status(500).send("Failed to fetch LED strips");
+    }
+});
 
         app.get("/actions", async (req, res) => {
             try {
@@ -123,6 +159,78 @@ const init = async () => {
                 }
             }
         });
+        // Endpoint to get all sensor_light entries
+app.get("/sensor-light", async (req, res) => {
+    try {
+        const [rows] = await connection.execute("SELECT * FROM sensor_light");
+        res.json(rows);
+    } catch (error) {
+        console.error("Failed to fetch sensor_light entries:", error);
+        res.status(500).send("Failed to fetch sensor_light entries");
+    }
+});
+
+// Endpoint to get a specific sensor_light entry by ID
+app.get("/sensor-light/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await connection.execute("SELECT * FROM sensor_light WHERE sensor_light_ID = ?", [id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).send("Sensor light entry not found");
+        }
+    } catch (error) {
+        console.error("Failed to fetch sensor_light entry:", error);
+        res.status(500).send("Failed to fetch sensor_light entry");
+    }
+});
+
+// Endpoint to create a new sensor_light entry
+app.post("/sensor-light", async (req, res) => {
+    const { sensor_ID, LED_strip_ID, range_ID, colour_ID } = req.body;
+
+    if (!sensor_ID || !LED_strip_ID || !range_ID || !colour_ID) {
+        return res.status(400).send("Invalid input data");
+    }
+
+    try {
+        const [result] = await connection.execute(
+            "INSERT INTO sensor_light (sensor_ID, LED_strip_ID, range_ID, colour_ID) VALUES (?, ?, ?, ?)",
+            [sensor_ID, LED_strip_ID, range_ID, colour_ID]
+        );
+        res.status(201).send(`Sensor light entry created with ID: ${result.insertId}`);
+    } catch (error) {
+        console.error("Failed to create sensor_light entry:", error);
+        res.status(500).send("Failed to create sensor_light entry");
+    }
+});
+
+// Endpoint to update an existing sensor_light entry by ID
+app.put("/sensor-light/:id", async (req, res) => {
+    const { id } = req.params;
+    const { sensor_ID, LED_strip_ID, range_ID, colour_ID } = req.body;
+
+    if (!sensor_ID || !LED_strip_ID || !range_ID || !colour_ID) {
+        return res.status(400).send("Invalid input data");
+    }
+
+    try {
+        const [result] = await connection.execute(
+            "UPDATE sensor_light SET sensor_ID = ?, LED_strip_ID = ?, range_ID = ?, colour_ID = ? WHERE sensor_light_ID = ?",
+            [sensor_ID, LED_strip_ID, range_ID, colour_ID, id]
+        );
+
+        if (result.affectedRows === 0) {
+            res.status(404).send("Sensor light entry not found");
+        } else {
+            res.send("Sensor light entry updated successfully");
+        }
+    } catch (error) {
+        console.error("Failed to update sensor_light entry:", error);
+        res.status(500).send("Failed to update sensor_light entry");
+    }
+});
 
         app.get("/selected-output/:sensor_ID", async (req, res) => {
             const { sensor_ID } = req.params;
@@ -184,6 +292,78 @@ const init = async () => {
                 res.status(500).send("Failed to update selected outputs");
             }
         });
+        // Endpoint to get all light_duration entries
+app.get("/light-durations", async (req, res) => {
+    try {
+        const [rows] = await connection.execute("SELECT * FROM light_duration");
+        res.json(rows);
+    } catch (error) {
+        console.error("Failed to fetch light_duration entries:", error);
+        res.status(500).send("Failed to fetch light_duration entries");
+    }
+});
+
+// Endpoint to get a specific light_duration entry by ID
+app.get("/light-duration/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await connection.execute("SELECT * FROM light_duration WHERE light_duration_ID = ?", [id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).send("Light duration entry not found");
+        }
+    } catch (error) {
+        console.error("Failed to fetch light_duration entry:", error);
+        res.status(500).send("Failed to fetch light_duration entry");
+    }
+});
+
+// Endpoint to create a new light_duration entry
+app.post("/light-duration", async (req, res) => {
+    const { duration } = req.body;
+
+    if (!duration) {
+        return res.status(400).send("Invalid input data");
+    }
+
+    try {
+        const [result] = await connection.execute(
+            "INSERT INTO light_duration (duration) VALUES (?)",
+            [duration]
+        );
+        res.status(201).send(`Light duration entry created with ID: ${result.insertId}`);
+    } catch (error) {
+        console.error("Failed to create light_duration entry:", error);
+        res.status(500).send("Failed to create light_duration entry");
+    }
+});
+
+// Endpoint to update an existing light_duration entry by ID
+app.put("/light-duration/:id", async (req, res) => {
+    const { id } = req.params;
+    const { duration } = req.body;
+
+    if (!duration) {
+        return res.status(400).send("Invalid input data");
+    }
+
+    try {
+        const [result] = await connection.execute(
+            "UPDATE light_duration SET duration = ? WHERE light_duration_ID = ?",
+            [duration, id]
+        );
+
+        if (result.affectedRows === 0) {
+            res.status(404).send("Light duration entry not found");
+        } else {
+            res.send("Light duration entry updated successfully");
+        }
+    } catch (error) {
+        console.error("Failed to update light_duration entry:", error);
+        res.status(500).send("Failed to update light_duration entry");
+    }
+});
 
         app.get("/logs", async (req, res) => {
             try {
