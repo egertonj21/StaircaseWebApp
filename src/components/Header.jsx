@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import icon from '../img/backdrop.webp';
 import mqtt from 'mqtt';
 import Switch from 'react-switch';
+import { fetchSensorsAwake, updateSensorsAwake, fetchMute, updateMute } from '../api/api'; // Ensure the path is correct
 
 // Define MQTT topics
 const CONTROL_TOPIC = "control/distance_sensor";
@@ -16,6 +17,28 @@ function Header() {
   const [isMuted, setIsMuted] = useState(false); // Track the state of the mute
 
   useEffect(() => {
+    // Fetch initial sensor status from the API
+    fetchSensorsAwake()
+      .then(response => {
+        console.log('Fetched sensor status:', response.data);
+        const sensorStatus = response.data[0]; // Extract the first element from the array
+        setIsAwake(sensorStatus.sensors_on === 1);
+      })
+      .catch(error => {
+        console.error('Error fetching sensor status:', error);
+      });
+
+    // Fetch initial mute status from the API
+    fetchMute()
+      .then(response => {
+        console.log('Fetched mute status:', response.data);
+        const muteStatus = response.data[0]; // Extract the first element from the array
+        setIsMuted(muteStatus.mute === 1);
+      })
+      .catch(error => {
+        console.error('Error fetching mute status:', error);
+      });
+
     // Connect to the MQTT broker
     const mqttClient = mqtt.connect('ws://192.168.0.93:8080');
 
@@ -63,6 +86,7 @@ function Header() {
 
     ws.onclose = (event) => {
       console.error('WebSocket connection closed', event);
+      console.error(`Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`);
     };
 
     return () => {
@@ -94,6 +118,15 @@ function Header() {
           console.log(`${motionCommand} command sent`);
         }
       });
+
+      // Update sensor awake status in the database
+      updateSensorsAwake({ sensors_on: isAwake ? 0 : 1 })
+        .then(() => {
+          console.log('Sensor status updated in database');
+        })
+        .catch(error => {
+          console.error('Error updating sensor status in database:', error);
+        });
     } else {
       console.error('MQTT client is not connected');
     }
@@ -112,6 +145,15 @@ function Header() {
           setIsMuted(!isMuted); // Toggle the state
         }
       });
+
+      // Update mute status in the database
+      updateMute({ muted: isMuted ? 0 : 1 })
+        .then(() => {
+          console.log('Mute status updated in database');
+        })
+        .catch(error => {
+          console.error('Error updating mute status in database:', error);
+        });
     } else {
       console.error('MQTT client is not connected');
     }

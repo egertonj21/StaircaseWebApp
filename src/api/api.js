@@ -70,4 +70,20 @@ export const updateLightDuration = (id, data) => api.post(`/light-duration`, dat
 // Fetch all colours
 export const fetchColours = () => api.get('/others/colours');
 
+// Fetch overall sensor on/off status
+
+export const fetchSensorsAwake = () => api.get('/others/sensorsAwake');
+
+// Update overall sensor on/off status
+
+export const updateSensorsAwake = (data) => api.post('/others/sensor-status', data);
+
+// Fetch Mute Status
+
+export const fetchMute = () => api.get('/others/mute');
+
+// Update Mute Status
+
+export const updateMute = (data) => api.post('/others/mute', data);
+
 export default api;
