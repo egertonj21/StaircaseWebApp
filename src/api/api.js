@@ -8,19 +8,19 @@ const api = axios.create({
 export const fetchSensors = () => api.get('/sensors');
 
 // Fetch actions from the action_table
-export const fetchActions = () => api.get('/actions');
+export const fetchActions = () => api.get('/others/actions');
 
 // Fetch range settings
-export const fetchRanges = () => api.get('/ranges');
+export const fetchRanges = () => api.get('/others/ranges');
 
 // Fetch notes including their locations
-export const fetchNotes = () => api.get('/notes');
+export const fetchNotes = () => api.get('/others/notes');
 
 // Fetch current settings for a selected sensor
-export const fetchCurrentSettings = (sensorId) => api.get(`/selected-output/${sensorId}`);
+export const fetchCurrentSettings = (sensorId) => api.get(`/others/selected-output/${sensorId}`);
 
 // Update selected outputs for a sensor
-export const updateSelectedOutputs = (sensorId, data) => api.post(`/selected-output/${sensorId}`, data);
+export const updateSelectedOutputs = (sensorId, data) => api.post(`/others/selected-output/${sensorId}`, data);
 
 // Update range settings for a given range
 export const updateRangeSettings = (rangeId, data) => api.put(`/range/${rangeId}`, data);
