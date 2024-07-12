@@ -23,7 +23,7 @@ export const fetchCurrentSettings = (sensorId) => api.get(`/others/selected-outp
 export const updateSelectedOutputs = (sensorId, data) => api.post(`/others/selected-output/${sensorId}`, data);
 
 // Update range settings for a given range
-export const updateRangeSettings = (rangeId, data) => api.put(`/range/${rangeId}`, data);
+export const updateRangeSettings = (rangeId, data) => api.put(`/others/range/${rangeId}`, data);
 
 // Fetch note details based on sensor and range ID
 export const fetchNoteDetails = (sensorId, rangeId) => api.get(`/note-details/${sensorId}/${rangeId}`);
