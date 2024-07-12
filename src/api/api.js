@@ -32,7 +32,7 @@ export const fetchNoteDetails = (sensorId, rangeId) => api.get(`/note-details/${
 export const logSensorData = (data) => api.post('/log-sensor-data', data);
 
 // Fetch logs
-export const fetchLogs = () => api.get('/logs');
+export const fetchLogs = () => api.get('/others/logs');
 
 // Fetch the current awake status of a sensor
 export const fetchSensorStatus = () => api.get('/sensor-status');
