@@ -38,25 +38,25 @@ export const fetchLogs = () => api.get('/others/logs');
 export const fetchSensorStatus = () => api.get('/sensor-status');
 
 // Fetch all LED strips
-export const fetchLedStrips = () => api.get('/ledstrips');
+export const fetchLedStrips = () => api.get('/ledstrip');
 
 // Update LED strip status
 export const updateLedStrip = (id, data) => api.put(`/ledstrip/${id}`, data);
 
 // Fetch all sensor_light entries
-export const fetchSensorLights = () => api.get('/sensor-light');
+export const fetchSensorLights = () => api.get('/others/sensor-light');
 
 // Fetch a specific sensor_light entry by ID
 export const fetchSensorLightById = (id) => api.get(`/sensor-light/${id}`);
 
 // Create a new sensor_light entry
-export const createSensorLight = (data) => api.post('/sensor-light', data);
+export const createSensorLight = (data) => api.post('/others/sensor-light', data);
 
 // Update an existing sensor_light entry by name
-export const updateSensorLight = (name, data) => api.put(`/sensor-light/${name}`, data);
+export const updateSensorLight = (LED_strip_ID, range_ID) => api.put(`/others/sensor-light/${LED_strip_ID}/${range_ID}`, data);
 
 // Fetch all light_duration entries
-export const fetchLightDurations = () => api.get('/light-durations');
+export const fetchLightDurations = () => api.get('/others/light-durations');
 
 // Fetch a specific light_duration entry by ID
 export const fetchLightDurationById = (id) => api.get(`/light-duration/${id}`);
@@ -65,9 +65,9 @@ export const fetchLightDurationById = (id) => api.get(`/light-duration/${id}`);
 export const createLightDuration = (data) => api.post('/light-duration', data);
 
 // Update an existing light_duration entry by ID
-export const updateLightDuration = (id, data) => api.put(`/light-duration/${id}`, data);
+export const updateLightDuration = (id, data) => api.post(`/light-duration`, data);
 
 // Fetch all colours
-export const fetchColours = () => api.get('/colours');
+export const fetchColours = () => api.get('/others/colours');
 
 export default api;
