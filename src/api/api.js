@@ -53,7 +53,7 @@ export const fetchSensorLightById = (id) => api.get(`/sensor-light/${id}`);
 export const createSensorLight = (data) => api.post('/others/sensor-light', data);
 
 // Update an existing sensor_light entry by name
-export const updateSensorLight = (LED_strip_ID, range_ID) => api.put(`/others/sensor-light/${LED_strip_ID}/${range_ID}`, data);
+export const updateSensorLight = (LED_strip_ID, range_ID, data) => api.put(`/others/sensor-light/${LED_strip_ID}/${range_ID}`, data);
 
 // Fetch all light_duration entries
 export const fetchLightDurations = () => api.get('/others/light-durations');

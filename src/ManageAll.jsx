@@ -8,7 +8,7 @@ import api, {
     fetchRanges, 
     fetchLightDurations, 
     fetchColours, 
-    fetchSensorLights, // Import fetchSensorLights to get sensor_light data
+    fetchSensorLights, 
     updateLightDuration 
 } from "./api/api";
 import Header from "./components/Header";
@@ -20,7 +20,7 @@ const ManageDevices = () => {
     const [ranges, setRanges] = useState([]);
     const [lightDurations, setLightDurations] = useState([]);
     const [colours, setColours] = useState([]);
-    const [sensorLights, setSensorLights] = useState([]); // State to store fetched sensor_light data
+    const [sensorLights, setSensorLights] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,14 +30,14 @@ const ManageDevices = () => {
                 const rangeData = await fetchRanges();
                 const lightDurationData = await fetchLightDurations();
                 const colourData = await fetchColours();
-                const sensorLightData = await fetchSensorLights(); // Fetch sensor_light data
+                const sensorLightData = await fetchSensorLights();
 
                 setSensors(sensorData.data);
                 setLedStrips(ledStripData.data);
                 setRanges(rangeData.data);
                 setLightDurations(lightDurationData.data);
                 setColours(colourData.data);
-                setSensorLights(sensorLightData.data); // Set sensor_light data to state
+                setSensorLights(sensorLightData.data);
             } catch (error) {
                 console.error("Failed to fetch data", error);
             }
@@ -49,16 +49,20 @@ const ManageDevices = () => {
         try {
             await updateLedStrip(id, data);
             alert("LED strip updated successfully!");
+            const ledStripData = await fetchLedStrips();
+            setLedStrips(ledStripData.data);
         } catch (error) {
             console.error("Failed to update LED strip", error);
             alert("Failed to update LED strip");
         }
     };
 
-    const handleSensorLightUpdate = async (id, data) => {
+    const handleSensorLightUpdate = async (LED_strip_ID, range_ID, colour_ID) => {
         try {
-            await updateSensorLight(id, data);
+            await updateSensorLight(LED_strip_ID, range_ID, { colour_ID });
             alert("Sensor light updated successfully!");
+            const sensorLightData = await fetchSensorLights();
+            setSensorLights(sensorLightData.data);
         } catch (error) {
             console.error("Failed to update sensor light", error);
             alert("Failed to update sensor light");
@@ -87,12 +91,7 @@ const ManageDevices = () => {
                         <div key={range.range_ID}>
                             <label>Range {range.range_name} Colour: </label>
                             <select 
-                                onChange={(e) => handleSensorLightUpdate(range.range_ID, { 
-                                    sensor_ID: null, 
-                                    LED_strip_ID: ledStrip.LED_strip_ID, 
-                                    range_ID: range.range_ID, 
-                                    colour_ID: e.target.value 
-                                })}>
+                                onChange={(e) => handleSensorLightUpdate(ledStrip.LED_strip_ID, range.range_ID, e.target.value)}>
                                 <option value="">Select Colour</option>
                                 {colours.map((colour) => (
                                     <option key={colour.colour_ID} value={colour.colour_ID}>
@@ -112,12 +111,7 @@ const ManageDevices = () => {
                             <label>Range {range.range_name} Tone: </label>
                             <input 
                                 type="text" 
-                                onChange={(e) => handleSensorLightUpdate(range.range_ID, { 
-                                    sensor_ID: sensor.sensor_ID, 
-                                    LED_strip_ID: null, 
-                                    range_ID: range.range_ID, 
-                                    colour_ID: e.target.value 
-                                })} 
+                                onChange={(e) => handleSensorLightUpdate(sensor.sensor_ID, range.range_ID, e.target.value)} 
                             />
                         </div>
                     ))}
