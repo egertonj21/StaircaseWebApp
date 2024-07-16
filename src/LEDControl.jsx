@@ -14,7 +14,7 @@ const LEDControl = () => {
 
         socket.onopen = () => {
             console.log('WebSocket connection opened');
-            socket.send(JSON.stringify({ action: 'fetch_initial_data' }));
+            socket.send(JSON.stringify({ action: 'fetch_initial_led_data' }));
         };
 
         socket.onmessage = (event) => {
@@ -48,17 +48,10 @@ const LEDControl = () => {
                 setColours(data.colours || []);
                 setSensorLights(data.sensorLights || []);
                 break;
-            case 'update_led_strip':
+            case 'updateLedStripColor':
                 setLedStrips((prev) =>
                     prev.map((strip) =>
                         strip.LED_strip_ID === data.ledStrip.LED_strip_ID ? data.ledStrip : strip
-                    )
-                );
-                break;
-            case 'update_sensor_light':
-                setSensorLights((prev) =>
-                    prev.map((light) =>
-                        light.sensor_light_ID === data.sensorLight.sensor_light_ID ? data.sensorLight : light
                     )
                 );
                 break;
@@ -67,15 +60,15 @@ const LEDControl = () => {
         }
     };
 
-    const handleLedStripUpdate = (id, data) => {
+    const handleLedStripUpdate = (led_strip_id, colour_id) => {
         if (ws) {
-            ws.send(JSON.stringify({ action: 'update_led_strip', id, data }));
+            ws.send(JSON.stringify({ action: 'updateLedStripColor', payload: { led_strip_id, colour_id } }));
         }
     };
 
     const handleSensorLightUpdate = (LED_strip_ID, range_ID, colour_ID) => {
         if (ws) {
-            ws.send(JSON.stringify({ action: 'update_sensor_light', LED_strip_ID, range_ID, colour_ID }));
+            ws.send(JSON.stringify({ action: 'updateSensorLightColour', payload: { LED_strip_ID, range_ID, colour_ID } }));
         }
     };
 
@@ -88,7 +81,7 @@ const LEDControl = () => {
                     <div>
                         <label>Overall Colour: </label>
                         <select
-                            onChange={(e) => handleLedStripUpdate(ledStrip.LED_strip_ID, { colour_ID: e.target.value })}
+                            onChange={(e) => handleLedStripUpdate(ledStrip.LED_strip_ID, e.target.value)}
                         >
                             <option value="">Select Colour</option>
                             {colours.map((colour) => (
