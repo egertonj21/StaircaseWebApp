@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { fetchRanges, updateRangeSettings } from './api/api';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import backgroundImage from './img/background4.webp';
@@ -13,44 +12,30 @@ const Ranges = () => {
   const [ws, setWs] = useState(null);
 
   useEffect(() => {
-    const getRanges = async () => {
-      try {
-        const response = await fetchRanges();
-        console.log("Fetched ranges:", response.data);
-        setRanges(response.data);
-      } catch (error) {
-        console.error("Failed to fetch ranges:", error);
-      }
-    };
-
-    getRanges();
-
     // WebSocket connection setup
     const socket = new WebSocket('ws://localhost:8080'); // Replace with IP if needed
 
     socket.onopen = () => {
       console.log('WebSocket connection opened');
+      socket.send(JSON.stringify({ action: 'getRanges' }));
     };
 
     socket.onmessage = (event) => {
       console.log('WebSocket message received:', event.data);
       const data = JSON.parse(event.data);
 
-      // Handle only update-range messages
-      if (Array.isArray(data)) {
-        console.log("Received sensor data, ignoring for range updates");
-        return;
-      }
-
-      if (data.type === 'update-range') {
+      if (data.action === 'getRanges') {
+        setRanges(data.data || []);
+        console.log("Fetched ranges:", data.data);
+      } else if (data.action === 'updateRange') {
         setRanges((prevRanges) =>
           prevRanges.map((range) =>
-            range.range_ID === data.range_ID
-              ? { ...range, lower_limit: data.lower_limit, upper_limit: data.upper_limit }
+            range.range_ID === data.data.range_ID
+              ? { ...range, lower_limit: data.data.lower_limit, upper_limit: data.data.upper_limit }
               : range
           )
         );
-        console.log("Updated ranges after WebSocket message:", data);
+        console.log("Updated ranges after WebSocket message:", data.data);
       }
     };
 
@@ -91,20 +76,17 @@ const Ranges = () => {
       alert("Please select a range to update.");
       return;
     }
-    try {
-      const data = {
+    const data = {
+      action: 'updateRange',
+      payload: {
+        range_ID: parseInt(selectedRange),
         range_name: rangeName,
         lower_limit: lowerLimit,
         upper_limit: upperLimit,
-      };
-      console.log("Updating range with data:", data);
-      const response = await updateRangeSettings(selectedRange, data);
-      console.log("Update response:", response);
-      alert("Range settings updated successfully!");
-    } catch (error) {
-      console.error("Failed to update range settings:", error);
-      alert("Failed to update range settings.");
-    }
+      }
+    };
+    console.log("Updating range with data:", data);
+    ws.send(JSON.stringify(data));
   };
 
   return (
