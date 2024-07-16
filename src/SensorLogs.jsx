@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { fetchLogs } from './api/api';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import backgroundImage from './img/background3.webp';
@@ -8,17 +7,22 @@ const SensorLogs = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.0.37:8080'); // Replace with your server's IP address
+    const ws = new WebSocket('ws://localhost:8080'); // Replace with your server's IP address
 
     ws.onopen = () => {
       console.log('WebSocket connection established');
+      ws.send(JSON.stringify({ action: 'getLogs' })); // Request initial logs
     };
 
     ws.onmessage = (event) => {
       try {
         console.log('WebSocket message received:', event.data);
         const data = JSON.parse(event.data);
-        setLogs(prevLogs => [data, ...prevLogs]); // Add new log entries to the beginning
+        if (data.action === 'logSensorData') {
+          setLogs(prevLogs => [data.data, ...prevLogs]); // Add new log entries to the beginning
+        } else if (data.action === 'getLogs') {
+          setLogs(data.data); // Set initial logs
+        }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
       }
@@ -31,10 +35,6 @@ const SensorLogs = () => {
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
-
-    fetchLogs()
-      .then(response => setLogs(response.data))
-      .catch(error => console.error('Error fetching logs:', error));
 
     return () => {
       ws.close();
@@ -55,8 +55,8 @@ const SensorLogs = () => {
             </tr>
           </thead>
           <tbody>
-            {logs.map((log) => (
-              <tr key={log.input_ID}>
+            {logs.map((log, index) => (
+              <tr key={index}>
                 <td>{log.sensor_name}</td>
                 <td>{log.distance}</td>
                 <td>{new Date(log.timestamp).toLocaleString()}</td>

@@ -1,161 +1,89 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import icon from '../img/backdrop.webp';
-import mqtt from 'mqtt';
 import Switch from 'react-switch';
-import { fetchSensorsAwake, updateSensorsAwake, fetchMute, updateMute } from '../api/api'; // Ensure the path is correct
 
-// Define MQTT topics
-const CONTROL_TOPIC = "control/distance_sensor";
-const MUTE_TOPIC = "audio/mute";
-const MOTION_CONTROL_TOPIC = "control/motion_sensor"; // New topic for motion sensor control
-
-function Header() {
-  const [mqttClient, setMqttClient] = useState(null);
+const Header = () => {
+  const [wsClient, setWsClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAwake, setIsAwake] = useState(true); // Track the state of the sensor
   const [isMuted, setIsMuted] = useState(false); // Track the state of the mute
 
   useEffect(() => {
-    // Fetch initial sensor status from the API
-    fetchSensorsAwake()
-      .then(response => {
-        console.log('Fetched sensor status:', response.data);
-        const sensorStatus = response.data[0]; // Extract the first element from the array
-        setIsAwake(sensorStatus.sensors_on === 1);
-      })
-      .catch(error => {
-        console.error('Error fetching sensor status:', error);
-      });
+    // Connect to the WebSocket server
+    const ws = new WebSocket('ws://localhost:8080'); // Replace with your server's IP address
 
-    // Fetch initial mute status from the API
-    fetchMute()
-      .then(response => {
-        console.log('Fetched mute status:', response.data);
-        const muteStatus = response.data[0]; // Extract the first element from the array
-        setIsMuted(muteStatus.mute === 1);
-      })
-      .catch(error => {
-        console.error('Error fetching mute status:', error);
-      });
-
-    // Connect to the MQTT broker
-    const mqttClient = mqtt.connect('ws://192.168.0.93:8080');
-
-    mqttClient.on('connect', () => {
-      console.log('Connected to MQTT broker');
-      setIsConnected(true);
-    });
-
-    mqttClient.on('error', (err) => {
-      console.error('MQTT connection error:', err);
-      setIsConnected(false);
-    });
-
-    mqttClient.on('offline', () => {
-      console.error('MQTT client went offline');
-      setIsConnected(false);
-    });
-
-    mqttClient.on('reconnect', () => {
-      console.log('Reconnecting to MQTT broker...');
-    });
-
-    setMqttClient(mqttClient);
-
-    // WebSocket for receiving initial sensor states
-    const ws = new WebSocket('ws://192.168.0.93:8080');
     ws.onopen = () => {
-      console.log('Connected to WebSocket server');
-      ws.send(JSON.stringify({ action: 'get_sensor_status' }));
+      console.log('WebSocket connection established');
+      setIsConnected(true);
+      ws.send(JSON.stringify({ action: 'get_sensor_status' })); // Request initial sensor status
+      ws.send(JSON.stringify({ action: 'get_mute_status' })); // Request initial mute status
     };
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('Received WebSocket message:', message);
-      if (message.type === 'sensor_status') {
-        setIsAwake(!!message.awake); // Convert to boolean
-        setIsMuted(message.muted);
-        console.log('Updated state - awake:', !!message.awake, 'muted:', message.muted);
+      try {
+        console.log('WebSocket message received:', event.data);
+        const data = JSON.parse(event.data);
+        if (data.action === 'get_sensor_status') {
+          setIsAwake(data.data.sensors_on === 1);
+        } else if (data.action === 'get_mute_status') {
+          setIsMuted(data.data.mute === 1);
+        } else if (data.action === 'update_sensor_status') {
+          setIsAwake(data.data.sensors_on === 1);
+        } else if (data.action === 'update_mute_status') {
+          setIsMuted(data.data.mute === 1);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
       }
     };
 
-    ws.onerror = (err) => {
-      console.error('WebSocket error:', err);
+    ws.onclose = (event) => {
+      console.log('WebSocket connection closed:', event);
+      setIsConnected(false);
     };
 
-    ws.onclose = (event) => {
-      console.error('WebSocket connection closed', event);
-      console.error(`Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`);
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsConnected(false);
     };
+
+    setWsClient(ws);
 
     return () => {
-      mqttClient.end();
       ws.close();
     };
   }, []);
 
   // Function to handle awake/asleep toggle
   const handleAwakeToggle = () => {
-    if (isConnected && mqttClient) {
+    if (isConnected && wsClient) {
       const command = isAwake ? 'sleep' : 'wake';
-      console.log(`Publishing command to ${CONTROL_TOPIC}: ${command}`);
-      mqttClient.publish(CONTROL_TOPIC, command, (error) => {
-        if (error) {
-          console.error('Publish error:', error);
-        } else {
-          console.log(`${command} command sent`);
-          setIsAwake(!isAwake); // Toggle the state
-        }
-      });
+      console.log(`Sending command via WebSocket: ${command}`);
+      wsClient.send(JSON.stringify({ action: 'control_sensor', command }));
 
-      const motionCommand = isAwake ? 'motion_wake' : 'motion_sleep';
-      console.log(`Publishing command to ${MOTION_CONTROL_TOPIC}: ${motionCommand}`);
-      mqttClient.publish(MOTION_CONTROL_TOPIC, motionCommand, (error) => {
-        if (error) {
-          console.error('Publish error:', error);
-        } else {
-          console.log(`${motionCommand} command sent`);
-        }
-      });
+      const motionCommand = isAwake ? 'motion_sleep' : 'motion_wake';
+      console.log(`Sending command via WebSocket: ${motionCommand}`);
+      wsClient.send(JSON.stringify({ action: 'control_motion', command: motionCommand }));
 
       // Update sensor awake status in the database
-      updateSensorsAwake({ sensors_on: isAwake ? 0 : 1 })
-        .then(() => {
-          console.log('Sensor status updated in database');
-        })
-        .catch(error => {
-          console.error('Error updating sensor status in database:', error);
-        });
+      wsClient.send(JSON.stringify({ action: 'update_sensor_status', payload: { sensors_on: isAwake ? 0 : 1 } }));
     } else {
-      console.error('MQTT client is not connected');
+      console.error('WebSocket client is not connected');
     }
   };
 
   // Function to handle mute/unmute toggle
   const handleMuteToggle = () => {
-    if (isConnected && mqttClient) {
+    if (isConnected && wsClient) {
       const command = isMuted ? 'unmute' : 'mute';
-      console.log(`Publishing command to ${MUTE_TOPIC}: ${command}`);
-      mqttClient.publish(MUTE_TOPIC, command, (error) => {
-        if (error) {
-          console.error('Publish error:', error);
-        } else {
-          console.log(`${command} command sent`);
-          setIsMuted(!isMuted); // Toggle the state
-        }
-      });
+      console.log(`Sending command via WebSocket: ${command}`);
+      wsClient.send(JSON.stringify({ action: 'control_mute', command }));
 
       // Update mute status in the database
-      updateMute({ muted: isMuted ? 0 : 1 })
-        .then(() => {
-          console.log('Mute status updated in database');
-        })
-        .catch(error => {
-          console.error('Error updating mute status in database:', error);
-        });
+      wsClient.send(JSON.stringify({ action: 'update_mute_status', payload: { mute: isMuted ? 0 : 1 } }));
     } else {
-      console.error('MQTT client is not connected');
+      console.error('WebSocket client is not connected');
     }
   };
 
@@ -206,6 +134,6 @@ function Header() {
       </nav>
     </div>
   );
-}
+};
 
 export default Header;

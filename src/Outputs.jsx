@@ -1,12 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  fetchSensors,
-  fetchActions,
-  fetchRanges,
-  fetchNotes,
-  fetchCurrentSettings,
-  updateSelectedOutputs,
-} from "./api/api";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import backgroundImage from './img/background2.webp';
@@ -22,30 +14,21 @@ const Outputs = () => {
   const [ws, setWs] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [sensorsRes, actionsRes, rangesRes, notesRes] = await Promise.all([
-          fetchSensors(),
-          fetchActions(),
-          fetchRanges(),
-          fetchNotes(),
-        ]);
-        setSensors(sensorsRes.data || []);
-        setActions(actionsRes.data || []);
-        setRanges(rangesRes.data || []);
-        setNotes(notesRes.data || []);
-        console.log("Data fetched successfully");
-      } catch (error) {
-        console.error("Error fetching data", error);
-      }
-    };
-    fetchData();
-
     const socket = new WebSocket("ws://localhost:8080");
-    socket.onopen = () => console.log("WebSocket connection opened");
-    socket.onmessage = event => handleWebSocketMessage(JSON.parse(event.data));
+
+    socket.onopen = () => {
+      console.log("WebSocket connection opened");
+      socket.send(JSON.stringify({ action: 'fetch_initial_data' }));
+    };
+
+    socket.onmessage = event => {
+      const data = JSON.parse(event.data);
+      handleWebSocketMessage(data);
+    };
+
     socket.onerror = error => console.error("WebSocket error:", error);
     socket.onclose = () => console.log("WebSocket connection closed");
+
     setWs(socket);
 
     return () => {
@@ -55,26 +38,37 @@ const Outputs = () => {
 
   const handleWebSocketMessage = data => {
     console.log("WebSocket message received:", data);
-    if (data.type === "update-outputs" && data.sensor_ID === selectedSensor) {
-      setCurrentSettings(data.range_outputs || []);
-      setRangeOutputs(data.range_outputs || []);
-    } else if (data.type === "update-range") {
-      setRanges(prevRanges => prevRanges.map(range =>
-        range.range_ID === data.range_ID ? { ...range, ...data } : range
-      ));
+    switch (data.action) {
+      case "fetch_initial_data":
+        setSensors(data.sensors || []);
+        setActions(data.actions || []);
+        setRanges(data.ranges || []);
+        setNotes(data.notes || []);
+        break;
+      case "fetch_current_settings":
+        console.log("Received current settings:", data.data);
+        setCurrentSettings(data.data || []);
+        setRangeOutputs(data.data || []);
+        break;
+      case "update_selected_outputs":
+        alert("Selected outputs updated successfully");
+        break;
+      case "error":
+        console.error("Error:", data.message);
+        alert("Failed to update selected outputs");
+        break;
+      default:
+        console.error("Unknown action:", data.action);
     }
   };
 
   const handleSensorChange = (sensorId) => {
+    console.log("Selected sensor ID:", sensorId); // Debugging
     setSelectedSensor(sensorId);
-    if (sensorId) {
-      fetchCurrentSettings(sensorId)
-        .then(response => {
-          setCurrentSettings(response.data || []);
-          setRangeOutputs(response.data || []);
-          console.log("Current settings fetched successfully for sensor:", sensorId);
-        })
-        .catch(error => console.error("Failed to fetch settings:", error));
+    if (sensorId && ws) {
+      const message = { action: 'fetch_current_settings', payload: { sensor_ID: sensorId } };
+      console.log("Sending WebSocket message:", message); // Debugging
+      ws.send(JSON.stringify(message));
     } else {
       setCurrentSettings([]);
       setRangeOutputs([]);
@@ -104,22 +98,15 @@ const Outputs = () => {
     });
   };
 
-  const handleSubmit = async () => {
-    if (selectedSensor) {
-      const data = { range_outputs: rangeOutputs };
-      console.log("Submitting data:", data);
-      try {
-        await updateSelectedOutputs(selectedSensor, data);
-        alert("Selected outputs updated successfully");
-      } catch (error) {
-        console.error("Error updating outputs:", error);
-        alert("Failed to update selected outputs");
-      }
+  const handleSubmit = () => {
+    if (selectedSensor && ws) {
+        const data = { action: 'updateSelectedOutput', payload: { sensor_ID: selectedSensor, range_outputs: rangeOutputs } };
+        console.log("Submitting data:", data); // Debugging
+        ws.send(JSON.stringify(data));
     } else {
-      alert("No sensor selected");
+        alert("No sensor selected");
     }
-  };
-
+};
   const getNoteNameById = noteId => {
     const note = notes.find(n => n.note_ID === noteId);
     return note ? note.note_name : "None";
