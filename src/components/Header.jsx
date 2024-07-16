@@ -106,7 +106,7 @@ const Header = () => {
         <Link to="/About">About</Link>
         <Link to="/Outputs">Outputs</Link>
         <Link to="/Ranges">Range Settings</Link>
-        <Link to="/ManageAll">Manage Devices</Link>
+        <Link to="/LEDControl">LED Controls</Link>
         <div className="toggle-container">
           <label className="toggle-label">Sensors</label>
           <Switch
