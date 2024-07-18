@@ -16,8 +16,9 @@ const Header = () => {
     ws.onopen = () => {
       console.log('WebSocket connection established');
       setIsConnected(true);
-      ws.send(JSON.stringify({ action: 'get_sensor_status' })); // Request initial sensor status
-      ws.send(JSON.stringify({ action: 'get_mute_status' })); // Request initial mute status
+      // Request initial statuses
+      ws.send(JSON.stringify({ action: 'get_sensor_status' }));
+      ws.send(JSON.stringify({ action: 'get_mute_status' }));
     };
 
     ws.onmessage = (event) => {
@@ -60,14 +61,10 @@ const Header = () => {
     if (isConnected && wsClient) {
       const command = isAwake ? 'sleep' : 'wake';
       console.log(`Sending command via WebSocket: ${command}`);
-      wsClient.send(JSON.stringify({ action: 'control_sensor', command }));
-
-      const motionCommand = isAwake ? 'motion_sleep' : 'motion_wake';
-      console.log(`Sending command via WebSocket: ${motionCommand}`);
-      wsClient.send(JSON.stringify({ action: 'control_motion', command: motionCommand }));
+      wsClient.send(JSON.stringify({ action: 'sendControlMessage', payload: { action: command } }));
 
       // Update sensor awake status in the database
-      wsClient.send(JSON.stringify({ action: 'update_sensor_status', payload: { sensors_on: isAwake ? 0 : 1 } }));
+      wsClient.send(JSON.stringify({ action: 'updateSensorStatus', payload: { sensors_on: isAwake ? 0 : 1 } }));
     } else {
       console.error('WebSocket client is not connected');
     }
@@ -78,7 +75,7 @@ const Header = () => {
     if (isConnected && wsClient) {
       const command = isMuted ? 'unmute' : 'mute';
       console.log(`Sending command via WebSocket: ${command}`);
-      wsClient.send(JSON.stringify({ action: 'control_mute', command }));
+      wsClient.send(JSON.stringify({ action: 'sendMuteMessage' }));
 
       // Update mute status in the database
       wsClient.send(JSON.stringify({ action: 'update_mute_status', payload: { mute: isMuted ? 0 : 1 } }));
