@@ -6,8 +6,8 @@ import SensorLogs from './SensorLogs';
 import Outputs from './Outputs';
 import About from './About';
 import Ranges from './Ranges'
-import ManageAll from './LEDControl'
 import LEDControl from './LEDControl';
+import SecuritySequenceControl from './SecuritySequenceControl';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -19,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/LEDControl" element={<LEDControl />} />
         <Route path="/SensorLogs" element={<SensorLogs />} />
         <Route path="/Ranges" element={<Ranges />} />
+        <Route path="/SecuritySequenceControl" element={<SecuritySequenceControl />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>
