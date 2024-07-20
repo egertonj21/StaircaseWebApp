@@ -8,6 +8,8 @@ const Header = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isAwake, setIsAwake] = useState(true); // Track the state of the sensor
   const [isMuted, setIsMuted] = useState(false); // Track the state of the mute
+  const [modes, setModes] = useState([]); // Track available modes
+  const [activeMode, setActiveMode] = useState(''); // Track the current active mode
 
   useEffect(() => {
     // Connect to the WebSocket server
@@ -19,6 +21,8 @@ const Header = () => {
       // Request initial statuses
       ws.send(JSON.stringify({ action: 'get_sensor_status' }));
       ws.send(JSON.stringify({ action: 'get_mute_status' }));
+      ws.send(JSON.stringify({ action: 'fetchAllModes' }));
+      ws.send(JSON.stringify({ action: 'fetchActiveMode' }));
     };
 
     ws.onmessage = (event) => {
@@ -33,6 +37,12 @@ const Header = () => {
           setIsAwake(data.data.sensors_on === 1);
         } else if (data.action === 'update_mute_status') {
           setIsMuted(data.data.mute === 1);
+        } else if (data.action === 'fetchAllModes') {
+          setModes(data.data);
+        } else if (data.action === 'fetchActiveMode') {
+          setActiveMode(data.data.mode_ID);
+        } else if (data.action === 'updateActiveMode') {
+          setActiveMode(data.payload.mode_ID);
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
@@ -84,6 +94,15 @@ const Header = () => {
     }
   };
 
+  // Function to handle mode change
+  const handleModeChange = (event) => {
+    const selectedMode = event.target.value;
+    setActiveMode(selectedMode);
+    if (isConnected && wsClient) {
+      wsClient.send(JSON.stringify({ action: 'updateActiveMode', payload: { mode_ID: selectedMode } }));
+    }
+  };
+
   return (
     <div className="header">
       <div className="header-top">
@@ -128,6 +147,16 @@ const Header = () => {
             checkedIcon={false}
           />
           <span className="toggle-status">{isMuted ? 'Muted' : 'Unmuted'}</span>
+        </div>
+        <div className="dropdown-container">
+          <label className="dropdown-label">Mode</label>
+          <select value={activeMode} onChange={handleModeChange}>
+            {modes.map((mode) => (
+              <option key={mode.mode_id} value={mode.mode_id}>
+                {mode.mode_name}
+              </option>
+            ))}
+          </select>
         </div>
       </nav>
     </div>
