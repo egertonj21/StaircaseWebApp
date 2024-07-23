@@ -86,8 +86,24 @@ const Ranges = () => {
       }
     };
     console.log("Updating range with data:", data);
+
+    // Update the database
     ws.send(JSON.stringify(data));
-  };
+
+    // Update the device's range settings
+    if (selectedRange == 1 || selectedRange == 2) {
+        const updateRangeSettingsData = {
+            action: 'updateRangeSettings',
+            payload: {
+                closeUpperLimit: selectedRange == 1 ? upperLimit : undefined,
+                midUpperLimit: selectedRange == 2 ? upperLimit : undefined
+            }
+        };
+        console.log("Updating device range settings with data:", updateRangeSettingsData);
+        ws.send(JSON.stringify(updateRangeSettingsData));
+    }
+};
+
 
   return (
     <>
