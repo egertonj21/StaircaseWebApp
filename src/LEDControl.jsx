@@ -60,17 +60,22 @@ const LEDControl = () => {
         }
     };
 
-    const handleLedStripUpdate = (led_strip_id, colour_id) => {
-        if (ws) {
-            ws.send(JSON.stringify({ action: 'updateLedStripColor', payload: { led_strip_id, colour_id } }));
-        }
-    };
-
     const handleSensorLightUpdate = (LED_strip_ID, range_ID, colour_ID) => {
-        if (ws) {
+        const ledStrip = ledStrips.find(strip => strip.LED_strip_ID === LED_strip_ID);
+        if (ws && ledStrip) {
+            const sensorName = ledStrip.LED_strip_name; // Use the actual sensor name from the ledStrips state
+            console.log(`Updating sensor light for ${sensorName}, range_ID: ${range_ID}, colour_ID: ${colour_ID}`);
+
+            // Send the update to the server
             ws.send(JSON.stringify({ action: 'updateSensorLightColour', payload: { LED_strip_ID, range_ID, colour_ID } }));
+
+            // After updating the color, trigger the setLEDColors action
+            ws.send(JSON.stringify({ action: 'setLEDColors', payload: { sensorName } }));
+        } else {
+            console.error(`LED strip with ID ${LED_strip_ID} not found or WebSocket is not connected`);
         }
     };
+    
 
     return (
         <div>
