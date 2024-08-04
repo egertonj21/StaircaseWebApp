@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import backgroundImage from './img/background2.webp';
 
 const LEDControl = () => {
     const [ledStrips, setLedStrips] = useState([]);
@@ -78,6 +79,7 @@ const LEDControl = () => {
     
 
     return (
+        <div className="LED-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <div>
             <Header />
             {ledStrips.map((ledStrip) => (
@@ -114,6 +116,7 @@ const LEDControl = () => {
                 </div>
             ))}
             <Footer />
+        </div>
         </div>
     );
 };

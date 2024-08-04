@@ -7,14 +7,13 @@ body {
   color: #333;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 100%; /* Ensure body takes full width */
   min-height: 100vh;
 }
 
 #root {
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  margin: 0;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -24,7 +23,7 @@ body {
 
 /* Header Styles */
 .header {
-  width: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,7 +37,12 @@ body {
   justify-content: space-between;
   width: 100%;
 }
-
+.dropdown-container{
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  color: white;
+}
 .icon {
   display: flex;
   align-items: center;
@@ -76,24 +80,34 @@ body {
 /* Content Styles */
 .about,
 .body,
-
-.container {
+.container{
   background-image: url('../img/image.webp'); /* Ensure the path is correct */
   background-size: cover; /* Cover the entire div */
   background-repeat: no-repeat; /* Prevent repeating */
   background-position: center; /* Center the image */
-  width: 100vh;
+  width: 100%;
   height: 65vh; /* Full viewport height */
   padding: 1em;
   background-color: #ffffff; /* Fallback color */
   color: #fff; /* Text color */
   border-radius: 0;
+  box-sizing: border-box; /* Ensure padding and borders are included in element's total width and height */
+  padding: 10px;
 }
 
+.LED-container {
+  background-size: 100%;
+  width: 100%;
+  padding: 10px;
+  padding-left: 20px; 
+
+
+
+}
 /* Styles for Ranges component */
 .ranges-container {
   padding: 20px;
-  max-width: 100vh;
+  width: 100%;
   height: 65vh;
   margin: 0 auto;
   background-color: rgba(249, 249, 249, 0.9);  /* Add a slight background color to ensure readability */
@@ -103,6 +117,7 @@ body {
   background-size: cover;  /* Ensure the background image covers the whole container */
   background-position: center;  /* Center the background image */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Ensure padding and borders are included in element's total width and height */
 }
 .ranges .button{
   align-items: flex-end;
@@ -115,7 +130,7 @@ body {
 
 .ranges-container form {
   display: flex;
-  width: 100vh;
+  width: 100%;
   flex-direction: column;
 }
 
@@ -193,7 +208,7 @@ body {
 .container table {
   color: rgb(0, 0, 0);
   border-collapse: collapse;
-  width: 100vh;
+  width: 100%;
   text-align: center;
 }
 
@@ -245,7 +260,7 @@ select, input {
   margin-bottom: 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Ensure padding and borders are included in element's total width and height */
 }
 
 /* Button Styles */
@@ -268,7 +283,7 @@ button:hover {
 
 /* Footer Styles */
 .footer {
-  width: 100vh;
+  width: 100%;
   padding: 1em;
   background-color: #007acc; /* Background color */
   color: #ffffff; /* Text color */
@@ -323,7 +338,6 @@ button:hover {
   margin-right: 15px;
 }
 
-
 .header {
   display: flex;
   flex-direction: column;
@@ -364,6 +378,13 @@ button:hover {
   text-decoration: none;
   margin: 0 10px;
 } */
+
+.security-container {
+  /* display: flex; */
+  width: 100%;
+  align-self: center;
+  padding: 10px;
+}
 
 .toggle-container {
   display: flex;

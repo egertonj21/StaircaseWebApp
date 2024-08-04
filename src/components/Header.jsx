@@ -136,7 +136,7 @@ const Header = () => {
         <Link to="/">Home</Link>
         <Link to="/SensorLogs">Sensor Logs</Link>
         <Link to="/About">About</Link>
-        <Link to="/Outputs">Outputs</Link>
+        <Link to="/Outputs">Notes</Link>
         <Link to="/Ranges">Range Settings</Link>
         <Link to="/LEDControl">LED Controls</Link>
         <Link to="/SecuritySequenceControl">Sentry Settings</Link>
@@ -170,14 +170,14 @@ const Header = () => {
             onChange={handleLEDToggle}
             checked={isLEDOn}
             offColor="#888"
-            onColor="#fff"
+            onColor="#ff0"
             uncheckedIcon={false}
             checkedIcon={false}
           />
           <span className="toggle-status">{isLEDOn ? 'On' : 'Off'}</span>
         </div>
         <div className="dropdown-container">
-          <label className="dropdown-label">Mode</label>
+          <label className="dropdown-label"></label>
           <select value={activeMode} onChange={handleModeChange}>
             {modes.map((mode) => (
               <option key={mode.mode_id} value={mode.mode_id}>

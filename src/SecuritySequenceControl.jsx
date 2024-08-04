@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import backgroundImage from './img/background4.webp';
 
 const SecuritySequenceControl = () => {
     const [sequences, setSequences] = useState([]);
@@ -85,7 +86,8 @@ const SecuritySequenceControl = () => {
     return (
         <div>
             <Header />
-            <div>
+            <div className="security-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
+                <div>
                 <h2>Add New Security Sequence</h2>
                 <div>
                     <label>Direction:</label>
@@ -159,6 +161,7 @@ const SecuritySequenceControl = () => {
                 ))}
             </div>
             <Footer />
+        </div>
         </div>
     );
 };
