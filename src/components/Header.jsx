@@ -140,6 +140,7 @@ const Header = () => {
         <Link to="/Ranges">Range Settings</Link>
         <Link to="/LEDControl">LED Controls</Link>
         <Link to="/SecuritySequenceControl">Sentry Settings</Link>
+        <Link to="/Game">Game</Link> 
         <div className="toggle-container">
           <label className="toggle-label">Sensors</label>
           <Switch

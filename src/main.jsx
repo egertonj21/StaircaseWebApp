@@ -8,6 +8,7 @@ import About from './About';
 import Ranges from './Ranges'
 import LEDControl from './LEDControl';
 import SecuritySequenceControl from './SecuritySequenceControl';
+import Game from './Game';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -20,6 +21,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/SensorLogs" element={<SensorLogs />} />
         <Route path="/Ranges" element={<Ranges />} />
         <Route path="/SecuritySequenceControl" element={<SecuritySequenceControl />} />
+        <Route path="/Game" element={<Game />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>
