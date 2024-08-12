@@ -13,6 +13,7 @@ const Header = () => {
   const [activeMode, setActiveMode] = useState(''); // Track the current active mode
 
   useEffect(() => {
+    
     // Connect to the WebSocket server
     const ws = new WebSocket('ws://localhost:8080'); // Replace with your server's IP address
 
@@ -31,7 +32,12 @@ const Header = () => {
       try {
         console.log('WebSocket message received:', event.data);
         const data = JSON.parse(event.data);
-        if (data.action === 'get_sensor_status') {
+
+        if (data.type === 'alarm') {
+          console.log('Alarm triggered!');
+          // Trigger an alert when the alarm action is received
+          alert('Security Alert: Alarm triggered on the staircase!');
+        } else if (data.action === 'get_sensor_status') {
           setIsAwake(data.data.sensors_on === 1);
         } else if (data.action === 'get_mute_status') {
           setIsMuted(data.data.mute === 1);
