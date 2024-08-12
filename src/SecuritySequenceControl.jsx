@@ -6,7 +6,6 @@ import backgroundImage from './img/background4.webp';
 const SecuritySequenceControl = () => {
     const [sequences, setSequences] = useState([]);
     const [positions, setPositions] = useState([]);
-    const [newSequence, setNewSequence] = useState({ direction: 'up', step1_position_ID: '', step2_position_ID: '', step3_position_ID: '' });
     const [ws, setWs] = useState(null);
 
     useEffect(() => {
@@ -49,27 +48,12 @@ const SecuritySequenceControl = () => {
             case 'fetchAllPositions':
                 setPositions(data.data || []);
                 break;
-            case 'addSecuritySequence':
             case 'updateSecuritySequence':
-            case 'deleteSecuritySequence':
-                // Refetch sequences after an operation
+                // Refetch sequences after an update operation
                 ws.send(JSON.stringify({ action: 'fetchAllSecuritySequences' }));
                 break;
             default:
                 console.error('Unknown action:', data.action);
-        }
-    };
-
-    const handleAddSequence = () => {
-        if (ws) {
-            ws.send(JSON.stringify({ action: 'addSecuritySequence', payload: newSequence }));
-            setNewSequence({ direction: 'up', step1_position_ID: '', step2_position_ID: '', step3_position_ID: '' });
-        }
-    };
-
-    const handleDeleteSequence = (sequence_ID) => {
-        if (ws) {
-            ws.send(JSON.stringify({ action: 'deleteSecuritySequence', payload: { sequence_ID } }));
         }
     };
 
@@ -79,89 +63,83 @@ const SecuritySequenceControl = () => {
         }
     };
 
-    const handleInputChange = (e, field) => {
-        setNewSequence({ ...newSequence, [field]: e.target.value });
+    const handleInputChange = (e, field, sequence_ID) => {
+        const updatedSequences = sequences.map(sequence => {
+            if (sequence.sequence_ID === sequence_ID) {
+                return { ...sequence, [field]: e.target.value };
+            }
+            return sequence;
+        });
+        setSequences(updatedSequences);
     };
 
     return (
         <div>
             <Header />
             <div className="security-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-                <div>
-                <h2>Add New Security Sequence</h2>
-                <div>
-                    <label>Direction:</label>
-                    <select value={newSequence.direction} onChange={(e) => handleInputChange(e, 'direction')}>
-                        <option value="up">Up</option>
-                        <option value="down">Down</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Step 1 Position:</label>
-                    <select
-                        value={newSequence.step1_position_ID}
-                        onChange={(e) => handleInputChange(e, 'step1_position_ID')}
-                    >
-                        <option value="">Select Position</option>
-                        {positions.map((position) => (
-                            <option key={position.position_ID} value={position.position_ID}>
-                                {position.position_name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Step 2 Position:</label>
-                    <select
-                        value={newSequence.step2_position_ID}
-                        onChange={(e) => handleInputChange(e, 'step2_position_ID')}
-                    >
-                        <option value="">Select Position</option>
-                        {positions.map((position) => (
-                            <option key={position.position_ID} value={position.position_ID}>
-                                {position.position_name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Step 3 Position:</label>
-                    <select
-                        value={newSequence.step3_position_ID}
-                        onChange={(e) => handleInputChange(e, 'step3_position_ID')}
-                    >
-                        <option value="">Select Position</option>
-                        {positions.map((position) => (
-                            <option key={position.position_ID} value={position.position_ID}>
-                                {position.position_name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <button onClick={handleAddSequence}>Add Sequence</button>
-            </div>
-
-            <div>
                 <h2>Existing Security Sequences</h2>
                 {sequences.map((sequence) => (
                     <div key={sequence.sequence_ID}>
                         <h3>Sequence ID: {sequence.sequence_ID}</h3>
-                        <p>Direction: {sequence.direction}</p>
-                        <p>Step 1 Position: {sequence.step1_position_ID}</p>
-                        <p>Step 2 Position: {sequence.step2_position_ID}</p>
-                        <p>Step 3 Position: {sequence.step3_position_ID}</p>
-                        <button onClick={() => handleDeleteSequence(sequence.sequence_ID)}>Delete</button>
-                        <button onClick={() => handleUpdateSequence(sequence.sequence_ID, {
-                            direction: 'up', // Replace with the actual value you want to update
-                            step1_position_ID: sequence.step1_position_ID,
-                            step2_position_ID: sequence.step2_position_ID,
-                            step3_position_ID: sequence.step3_position_ID
-                        })}>Update</button>
+                        <div>
+                            <label>Direction:</label>
+                            <select
+                                value={sequence.direction}
+                                onChange={(e) => handleInputChange(e, 'direction', sequence.sequence_ID)}
+                            >
+                                <option value="up">Up</option>
+                                <option value="down">Down</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Step 1 Position:</label>
+                            <select
+                                value={sequence.step1_position_ID}
+                                onChange={(e) => handleInputChange(e, 'step1_position_ID', sequence.sequence_ID)}
+                            >
+                                <option value="">Select Position</option>
+                                {positions.map((position) => (
+                                    <option key={position.position_ID} value={position.position_ID}>
+                                        {position.position_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Step 2 Position:</label>
+                            <select
+                                value={sequence.step2_position_ID}
+                                onChange={(e) => handleInputChange(e, 'step2_position_ID', sequence.sequence_ID)}
+                            >
+                                <option value="">Select Position</option>
+                                {positions.map((position) => (
+                                    <option key={position.position_ID} value={position.position_ID}>
+                                        {position.position_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Step 3 Position:</label>
+                            <select
+                                value={sequence.step3_position_ID}
+                                onChange={(e) => handleInputChange(e, 'step3_position_ID', sequence.sequence_ID)}
+                            >
+                                <option value="">Select Position</option>
+                                {positions.map((position) => (
+                                    <option key={position.position_ID} value={position.position_ID}>
+                                        {position.position_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <button onClick={() => handleUpdateSequence(sequence.sequence_ID, sequence)}>
+                            Update
+                        </button>
                     </div>
                 ))}
             </div>
             <Footer />
-        </div>
         </div>
     );
 };
