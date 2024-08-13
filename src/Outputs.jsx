@@ -141,7 +141,7 @@ const Outputs = () => {
     <>
       <Header />
       <div className="container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        <h2>Outputs</h2>
+        <h2>Note Selection</h2>
         <div className="form-group">
   <label id="dark" htmlFor="preset-select">Preset:</label>
   <select id="preset-select" value={selectedPreset} onChange={e => handlePresetChange(e.target.value)}>

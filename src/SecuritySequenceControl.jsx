@@ -77,10 +77,10 @@ const SecuritySequenceControl = () => {
         <div>
             <Header />
             <div className="security-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-                <h2>Existing Security Sequences</h2>
+                <h2>Existing Security Sequence</h2>
                 {sequences.map((sequence) => (
   <div key={sequence.sequence_ID}>
-    <h3>Sequence ID: {sequence.sequence_ID}</h3>
+    
     <div>
       <label htmlFor={`direction-select-${sequence.sequence_ID}`}>Direction:</label>
       <select
