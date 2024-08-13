@@ -148,8 +148,9 @@ const Header = () => {
         <Link to="/SecuritySequenceControl">Sentry Settings</Link>
         <Link to="/Game">Game</Link> 
         <div className="toggle-container">
-          <label className="toggle-label">Sensors</label>
+          <label className="toggle-label" htmlFor="sensors-toggle">Sensors</label>
           <Switch
+            id="sensors-toggle"
             onChange={handleAwakeToggle}
             checked={isAwake}
             offColor="#888"
@@ -160,8 +161,9 @@ const Header = () => {
           <span className="toggle-status">{isAwake ? 'Awake' : 'Asleep'}</span>
         </div>
         <div className="toggle-container">
-          <label className="toggle-label">Mute</label>
+          <label className="toggle-label" htmlFor="mute-toggle">Mute</label>
           <Switch
+            id="mute-toggle"
             onChange={handleMuteToggle}
             checked={isMuted}
             offColor="#888"
@@ -172,8 +174,9 @@ const Header = () => {
           <span className="toggle-status">{isMuted ? 'Muted' : 'Unmuted'}</span>
         </div>
         <div className="toggle-container">
-          <label className="toggle-label">LEDs</label>
+          <label className="toggle-label" htmlFor="led-toggle">LEDs</label>
           <Switch
+            id="led-toggle"
             onChange={handleLEDToggle}
             checked={isLEDOn}
             offColor="#888"
@@ -184,8 +187,8 @@ const Header = () => {
           <span className="toggle-status">{isLEDOn ? 'On' : 'Off'}</span>
         </div>
         <div className="dropdown-container">
-          <label className="dropdown-label"></label>
-          <select value={activeMode} onChange={handleModeChange}>
+          <label className="dropdown-label" htmlFor="mode-select">Select Mode</label>
+          <select id="mode-select" value={activeMode} onChange={handleModeChange}>
             {modes.map((mode) => (
               <option key={mode.mode_id} value={mode.mode_id}>
                 {mode.mode_name}

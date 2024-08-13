@@ -143,38 +143,39 @@ const Outputs = () => {
       <div className="container" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <h2>Outputs</h2>
         <div className="form-group">
-          <label>Preset:</label>
-          <select value={selectedPreset} onChange={e => handlePresetChange(e.target.value)}>
-            <option value="">Select a preset</option>
-            {presets.map(preset => (
-              <option key={preset.preset_ID} value={preset.preset_name}>{preset.preset_name}</option>
-            ))}
-          </select>
-          <button onClick={handleApplyPreset}>Apply Preset</button>
-        </div>
-        <div className="form-group">
-          <label>Sensor:</label>
-          <select value={selectedSensor} onChange={e => handleSensorChange(e.target.value)}>
-            <option value="">Select a sensor</option>
-            {sensors.map(sensor => (
-              <option key={sensor.sensor_ID} value={sensor.sensor_ID}>{sensor.sensor_name}</option>
-            ))}
-          </select>
-        </div>
-        {ranges.map(range => (
-          <div key={range.range_ID} className="form-group">
-            <label>
-              {range.range_name} (Current: {getNoteNameById(currentSettings.find(cs => cs.range_ID === range.range_ID)?.note_ID)}):
-            </label>
-            <select onChange={e => handleRangeOutputChange(range.range_ID, e.target.value)}
-                    value={currentSettings.find(cs => cs.range_ID === range.range_ID)?.note_ID || ""}>
-              <option value="">Select a note</option>
-              {notes.map(note => (
-                <option key={note.note_ID} value={note.note_ID}>{note.note_name}</option>
-              ))}
-            </select>
-          </div>
-        ))}
+  <label htmlFor="preset-select">Preset:</label>
+  <select id="preset-select" value={selectedPreset} onChange={e => handlePresetChange(e.target.value)}>
+    <option value="">Select a preset</option>
+    {presets.map(preset => (
+      <option key={preset.preset_ID} value={preset.preset_name}>{preset.preset_name}</option>
+    ))}
+  </select>
+  <button onClick={handleApplyPreset}>Apply Preset</button>
+</div>
+<div className="form-group">
+  <label htmlFor="sensor-select">Sensor:</label>
+  <select id="sensor-select" value={selectedSensor} onChange={e => handleSensorChange(e.target.value)}>
+    <option value="">Select a sensor</option>
+    {sensors.map(sensor => (
+      <option key={sensor.sensor_ID} value={sensor.sensor_ID}>{sensor.sensor_name}</option>
+    ))}
+  </select>
+</div>
+{ranges.map(range => (
+  <div key={range.range_ID} className="form-group">
+    <label htmlFor={`range-select-${range.range_ID}`}>
+      {range.range_name} (Current: {getNoteNameById(currentSettings.find(cs => cs.range_ID === range.range_ID)?.note_ID)}):
+    </label>
+    <select id={`range-select-${range.range_ID}`} onChange={e => handleRangeOutputChange(range.range_ID, e.target.value)}
+            value={currentSettings.find(cs => cs.range_ID === range.range_ID)?.note_ID || ""}>
+      <option value="">Select a note</option>
+      {notes.map(note => (
+        <option key={note.note_ID} value={note.note_ID}>{note.note_name}</option>
+      ))}
+    </select>
+  </div>
+))}
+
         <button onClick={handleSubmit}>Update Selected Outputs</button>
       </div>
       <Footer />

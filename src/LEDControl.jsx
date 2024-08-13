@@ -82,25 +82,29 @@ const LEDControl = () => {
             <div>
                 <Header />
                 {ledStrips.map((ledStrip) => (
-                    <div key={ledStrip.LED_strip_ID}>
-                        <h2>LED Strip: {ledStrip.LED_strip_name}</h2>
-                        {ranges.map((range) => (
-                            <div key={range.range_ID}>
-                                <label>Range {range.range_name} Colour: </label>
-                                <select
-                                    onChange={(e) => handleSensorLightUpdate(ledStrip.LED_strip_ID, range.range_ID, e.target.value)}
-                                >
-                                    <option value="">Select Colour</option>
-                                    {colours.map((colour) => (
-                                        <option key={colour.colour_ID} value={colour.colour_ID}>
-                                            {colour.colour_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        ))}
-                    </div>
-                ))}
+  <div key={ledStrip.LED_strip_ID}>
+    <h2>LED Strip: {ledStrip.LED_strip_name}</h2>
+    {ranges.map((range) => (
+      <div key={range.range_ID}>
+        <label htmlFor={`colour-select-${ledStrip.LED_strip_ID}-${range.range_ID}`}>
+          Range {range.range_name} Colour:
+        </label>
+        <select
+          id={`colour-select-${ledStrip.LED_strip_ID}-${range.range_ID}`}
+          onChange={(e) => handleSensorLightUpdate(ledStrip.LED_strip_ID, range.range_ID, e.target.value)}
+        >
+          <option value="">Select Colour</option>
+          {colours.map((colour) => (
+            <option key={colour.colour_ID} value={colour.colour_ID}>
+              {colour.colour_name}
+            </option>
+          ))}
+        </select>
+      </div>
+    ))}
+  </div>
+))}
+
                 <Footer />
             </div>
         </div>

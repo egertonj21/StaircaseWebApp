@@ -71,7 +71,9 @@ const Game = () => {
         <h1>Sequence Length</h1>
         <div className="game-length-controls">
           <button onClick={() => updateGameLength(gameLength - 1)}>-</button>
+          <label htmlFor="game-length-input">Game Length:</label>
           <input
+            id="game-length-input"
             type="number"
             value={gameLength}
             onChange={(e) => setGameLength(parseInt(e.target.value))}
