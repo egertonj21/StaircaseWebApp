@@ -70,8 +70,9 @@ const Game = () => {
       <div className="game-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <h1>Sequence Length</h1>
         <div className="game-length-controls">
-          <button onClick={() => updateGameLength(gameLength - 1)}>-</button>
           <label htmlFor="game-length-input">Game Length:</label>
+          <button onClick={() => updateGameLength(gameLength - 1)}>-</button>
+          
           <input
             id="game-length-input"
             type="number"

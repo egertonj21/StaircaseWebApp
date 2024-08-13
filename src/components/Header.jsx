@@ -129,13 +129,13 @@ const Header = () => {
     <div className="header">
       <div className="header-top">
         <div className="icon">
-          <img src={icon} alt="Staircase Icon" className="header-icon" />
+          <img src={icon} alt="Left Icon" className="header-icon" />
         </div>
         <div className="header-title">
           <h1>Musical Staircase</h1>
         </div>
         <div className="icon">
-          <img src={icon} alt="Staircase Icon" className="header-icon" />
+          <img src={icon} alt="Right Icon" className="header-icon" />
         </div>
       </div>
       <nav className="header-nav">
